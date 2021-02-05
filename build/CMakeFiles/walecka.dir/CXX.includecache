@@ -544,10 +544,6 @@ vector
 
 ../src/wfunctions.h
 
-../src/wplot.h
-stdlib.h
--
-
 ../src/wsolvers.h
 stdlib.h
 -
@@ -556,42 +552,6 @@ utility
 gsl/gsl_multiroots.h
 -
 gsl/gsl_sf.h
--
-
-/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/main.cpp
-../../src/wplot.h
--
-../../src/wsolvers.h
--
-../../src/wfunctions.h
--
-stdio.h
--
-stdlib.h
--
-iostream
--
-
-/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wplot.cpp
-../../src/wplot.h
--
-../../src/wsolvers.h
--
-../../src/wfunctions.h
--
-stdio.h
--
-stdlib.h
--
-math.h
--
-utility
--
-iostream
--
-matplot/matplot.h
--
-vector
 -
 
 /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp
