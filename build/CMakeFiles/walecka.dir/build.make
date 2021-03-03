@@ -83,22 +83,9 @@ CMakeFiles/walecka.dir/src/wplot.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/walecka.dir/src/wplot.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wplot.cpp -o CMakeFiles/walecka.dir/src/wplot.cpp.s
 
-CMakeFiles/walecka.dir/src/wsolvers.cpp.o: CMakeFiles/walecka.dir/flags.make
-CMakeFiles/walecka.dir/src/wsolvers.cpp.o: ../src/wsolvers.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/walecka.dir/src/wsolvers.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/walecka.dir/src/wsolvers.cpp.o -c /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp
-
-CMakeFiles/walecka.dir/src/wsolvers.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/walecka.dir/src/wsolvers.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp > CMakeFiles/walecka.dir/src/wsolvers.cpp.i
-
-CMakeFiles/walecka.dir/src/wsolvers.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/walecka.dir/src/wsolvers.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp -o CMakeFiles/walecka.dir/src/wsolvers.cpp.s
-
 CMakeFiles/walecka.dir/src/wfunctions.cpp.o: CMakeFiles/walecka.dir/flags.make
 CMakeFiles/walecka.dir/src/wfunctions.cpp.o: ../src/wfunctions.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/walecka.dir/src/wfunctions.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/walecka.dir/src/wfunctions.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/walecka.dir/src/wfunctions.cpp.o -c /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wfunctions.cpp
 
 CMakeFiles/walecka.dir/src/wfunctions.cpp.i: cmake_force
@@ -109,22 +96,35 @@ CMakeFiles/walecka.dir/src/wfunctions.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/walecka.dir/src/wfunctions.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wfunctions.cpp -o CMakeFiles/walecka.dir/src/wfunctions.cpp.s
 
+CMakeFiles/walecka.dir/src/wsolvers.cpp.o: CMakeFiles/walecka.dir/flags.make
+CMakeFiles/walecka.dir/src/wsolvers.cpp.o: ../src/wsolvers.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/walecka.dir/src/wsolvers.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/walecka.dir/src/wsolvers.cpp.o -c /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp
+
+CMakeFiles/walecka.dir/src/wsolvers.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/walecka.dir/src/wsolvers.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp > CMakeFiles/walecka.dir/src/wsolvers.cpp.i
+
+CMakeFiles/walecka.dir/src/wsolvers.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/walecka.dir/src/wsolvers.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/niklas/Desktop/PhD/Walecka/CWalecka0.1/src/wsolvers.cpp -o CMakeFiles/walecka.dir/src/wsolvers.cpp.s
+
 # Object files for target walecka
 walecka_OBJECTS = \
 "CMakeFiles/walecka.dir/main.cpp.o" \
 "CMakeFiles/walecka.dir/src/wplot.cpp.o" \
-"CMakeFiles/walecka.dir/src/wsolvers.cpp.o" \
-"CMakeFiles/walecka.dir/src/wfunctions.cpp.o"
+"CMakeFiles/walecka.dir/src/wfunctions.cpp.o" \
+"CMakeFiles/walecka.dir/src/wsolvers.cpp.o"
 
 # External object files for target walecka
 walecka_EXTERNAL_OBJECTS =
 
 walecka: CMakeFiles/walecka.dir/main.cpp.o
 walecka: CMakeFiles/walecka.dir/src/wplot.cpp.o
-walecka: CMakeFiles/walecka.dir/src/wsolvers.cpp.o
 walecka: CMakeFiles/walecka.dir/src/wfunctions.cpp.o
+walecka: CMakeFiles/walecka.dir/src/wsolvers.cpp.o
 walecka: CMakeFiles/walecka.dir/build.make
-walecka: matplotplusplus/source/matplot/libmatplot.a
+walecka: thirdparty/matplotplusplus/source/matplot/libmatplot.a
 walecka: /usr/lib/x86_64-linux-gnu/libgsl.so
 walecka: /usr/lib/x86_64-linux-gnu/libgslcblas.so
 walecka: /usr/lib/x86_64-linux-gnu/libz.so
@@ -132,7 +132,10 @@ walecka: /usr/lib/x86_64-linux-gnu/libpng.so
 walecka: /usr/lib/x86_64-linux-gnu/libz.so
 walecka: /usr/lib/x86_64-linux-gnu/libpng.so
 walecka: /usr/lib/x86_64-linux-gnu/liblapack.so
-walecka: /usr/lib/x86_64-linux-gnu/libblas.so
+walecka: /usr/lib/x86_64-linux-gnu/libf77blas.so
+walecka: /usr/lib/x86_64-linux-gnu/libatlas.so
+walecka: /usr/lib/x86_64-linux-gnu/libf77blas.so
+walecka: /usr/lib/x86_64-linux-gnu/libatlas.so
 walecka: /usr/lib/x86_64-linux-gnu/libfftw3.so
 walecka: /usr/lib/x86_64-linux-gnu/libfftw3f.so
 walecka: /usr/lib/x86_64-linux-gnu/libfftw3l.so
@@ -142,7 +145,9 @@ walecka: /usr/lib/x86_64-linux-gnu/libfftw3l_threads.so
 walecka: /usr/lib/x86_64-linux-gnu/libfftw3_omp.so
 walecka: /usr/lib/x86_64-linux-gnu/libfftw3f_omp.so
 walecka: /usr/lib/x86_64-linux-gnu/libfftw3l_omp.so
-walecka: matplotplusplus/source/3rd_party/libnodesoup.a
+walecka: thirdparty/matplotplusplus/source/3rd_party/libnodesoup.a
+walecka: /usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
+walecka: /usr/lib/x86_64-linux-gnu/libpthread.so
 walecka: CMakeFiles/walecka.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable walecka"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/walecka.dir/link.txt --verbose=$(VERBOSE)

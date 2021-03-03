@@ -133,7 +133,7 @@ nodesoup: cmake_check_build_system
 
 # fast build rule for target.
 nodesoup/fast:
-	$(MAKE) -f matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir/build.make matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir/build
+	$(MAKE) -f thirdparty/matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir/build.make thirdparty/matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir/build
 .PHONY : nodesoup/fast
 
 #=============================================================================
@@ -146,7 +146,7 @@ matplot: cmake_check_build_system
 
 # fast build rule for target.
 matplot/fast:
-	$(MAKE) -f matplotplusplus/source/matplot/CMakeFiles/matplot.dir/build.make matplotplusplus/source/matplot/CMakeFiles/matplot.dir/build
+	$(MAKE) -f thirdparty/matplotplusplus/source/matplot/CMakeFiles/matplot.dir/build.make thirdparty/matplotplusplus/source/matplot/CMakeFiles/matplot.dir/build
 .PHONY : matplot/fast
 
 main.o: main.cpp.o

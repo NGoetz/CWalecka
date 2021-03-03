@@ -18,13 +18,15 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "../matplotplusplus/source"
+  "../src"
+  "../thirdparty/matplotplusplus/source"
+  "/usr/include/eigen3"
   )
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/matplotplusplus/source/matplot/CMakeFiles/matplot.dir/DependInfo.cmake"
-  "/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir/DependInfo.cmake"
+  "/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/thirdparty/matplotplusplus/source/matplot/CMakeFiles/matplot.dir/DependInfo.cmake"
+  "/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/thirdparty/matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

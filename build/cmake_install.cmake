@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/matplotplusplus/cmake_install.cmake")
+  include("/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/thirdparty/matplotplusplus/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)

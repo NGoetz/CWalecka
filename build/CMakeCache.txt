@@ -24,6 +24,9 @@ BLAS_acml_LIBRARY:FILEPATH=BLAS_acml_LIBRARY-NOTFOUND
 BLAS_acml_mp_LIBRARY:FILEPATH=BLAS_acml_mp_LIBRARY-NOTFOUND
 
 //Path to a library.
+BLAS_atlas_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libatlas.so
+
+//Path to a library.
 BLAS_blas_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libblas.so
 
 //Path to a library.
@@ -42,7 +45,7 @@ BLAS_dxml_LIBRARY:FILEPATH=BLAS_dxml_LIBRARY-NOTFOUND
 BLAS_essl_LIBRARY:FILEPATH=BLAS_essl_LIBRARY-NOTFOUND
 
 //Path to a library.
-BLAS_f77blas_LIBRARY:FILEPATH=BLAS_f77blas_LIBRARY-NOTFOUND
+BLAS_f77blas_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libf77blas.so
 
 //Path to a library.
 BLAS_goto2_LIBRARY:FILEPATH=BLAS_goto2_LIBRARY-NOTFOUND
@@ -94,6 +97,9 @@ BUILD_INSTALLER:BOOL=OFF
 
 //Build package
 BUILD_PACKAGE:BOOL=OFF
+
+//Build unit tests
+BUILD_PALLAS_TESTS:BOOL=ON
 
 //Build shared libraries
 BUILD_SHARED_LIBS:BOOL=OFF
@@ -375,7 +381,7 @@ CPM_LOCAL_PACKAGES_ONLY:BOOL=OFF
 //Directory to downlaod CPM dependencies
 CPM_SOURCE_CACHE:PATH=OFF
 
-//Always try to use `find_package` to get dependencies
+//Try `find_package` before downloading dependencies
 CPM_USE_LOCAL_PACKAGES:BOOL=ON
 
 //TRUE if we have the C++ filesystem headers
@@ -389,6 +395,12 @@ CXX_FILESYSTEM_IS_EXPERIMENTAL:BOOL=FALSE
 
 //The C++ namespace that contains the filesystem APIs
 CXX_FILESYSTEM_NAMESPACE:STRING=std::filesystem
+
+//The directory containing a CMake configuration file for Ceres.
+Ceres_DIR:PATH=/usr/local/lib/cmake/Ceres
+
+//The directory containing a CMake configuration file for Eigen3.
+Eigen3_DIR:PATH=/usr/lib/cmake/eigen3
 
 //Directory under which to collect all populated content
 FETCHCONTENT_BASE_DIR:PATH=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/_deps
@@ -435,6 +447,12 @@ FFTW_LONGDOUBLE_THREADS_LIB:FILEPATH=/usr/lib/x86_64-linux-gnu/libfftw3l_threads
 
 //TRUE if we can run a program using std::filesystem
 Filesystem_FOUND:BOOL=TRUE
+
+//Path to a file.
+GLOG_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+GLOG_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libglog.so
 
 //Path to a library.
 GSL_CBLAS_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libgslcblas.so
@@ -485,9 +503,21 @@ LAPACK_vecLib_LIBRARY:FILEPATH=LAPACK_vecLib_LIBRARY-NOTFOUND
 
 OPENCV_FOUND:BOOL=FALSE
 
-OpenCV_CONFIG_PATH:FILEPATH=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/matplotplusplus/cmake
+OpenCV_CONFIG_PATH:FILEPATH=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/thirdparty/matplotplusplus/cmake
 
 OpenCV_FOUND:BOOL=FALSE
+
+//CXX compiler flags for OpenMP parallelization
+OpenMP_CXX_FLAGS:STRING=-fopenmp
+
+//CXX compiler libraries for OpenMP parallelization
+OpenMP_CXX_LIB_NAMES:STRING=gomp;pthread
+
+//Path to the gomp library for OpenMP
+OpenMP_gomp_LIBRARY:FILEPATH=/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
+
+//Path to the pthread library for OpenMP
+OpenMP_pthread_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpthread.so
 
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
@@ -500,6 +530,15 @@ PNG_LIBRARY_RELEASE:FILEPATH=/usr/lib/x86_64-linux-gnu/libpng.so
 
 //Path to a file.
 PNG_PNG_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a program.
+PYTHON_EXECUTABLE:FILEPATH=/home/niklas/programs/anaconda3/bin/python
+
+//Value Computed by CMake
+Pallas_BINARY_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/thirdparty/pallas
+
+//Value Computed by CMake
+Pallas_SOURCE_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/thirdparty/pallas
 
 //Path to a file.
 TIFF_INCLUDE_DIR:PATH=TIFF_INCLUDE_DIR-NOTFOUND
@@ -531,11 +570,42 @@ cwalecka0.1_BINARY_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build
 //Value Computed by CMake
 cwalecka0.1_SOURCE_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1
 
-//Value Computed by CMake
-matplotplusplus_BINARY_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/matplotplusplus
+//The directory containing a CMake configuration file for gflags.
+gflags_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/gflags
 
 //Value Computed by CMake
-matplotplusplus_SOURCE_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/matplotplusplus
+gtest_BINARY_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/thirdparty/pallas/ext/googletest/googletest
+
+//Dependencies for the target
+gtest_LIB_DEPENDS:STATIC=general;-lpthread;
+
+//Value Computed by CMake
+gtest_SOURCE_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/thirdparty/pallas/ext/googletest/googletest
+
+//Build gtest's sample programs.
+gtest_build_samples:BOOL=OFF
+
+//Build all of gtest's own tests.
+gtest_build_tests:BOOL=OFF
+
+//Disable uses of pthreads in gtest.
+gtest_disable_pthreads:BOOL=OFF
+
+//Use shared (DLL) run-time lib even when Google Test is built
+// as static lib.
+gtest_force_shared_crt:BOOL=OFF
+
+//Dependencies for the target
+gtest_main_LIB_DEPENDS:STATIC=general;-lpthread;general;gtest;
+
+//Value Computed by CMake
+matplotplusplus_BINARY_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/build/thirdparty/matplotplusplus
+
+//Value Computed by CMake
+matplotplusplus_SOURCE_DIR:STATIC=/home/niklas/Desktop/PhD/Walecka/CWalecka0.1/thirdparty/matplotplusplus
+
+//Dependencies for the target
+pallas_LIB_DEPENDS:STATIC=general;Ceres::ceres;general;/usr/lib/x86_64-linux-gnu/libglog.so;
 
 //Path to a library.
 pkgcfg_lib_GSL_gsl:FILEPATH=/usr/lib/x86_64-linux-gnu/libgsl.so
@@ -562,6 +632,8 @@ BLAS_WORKS:INTERNAL=
 BLAS_acml_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: BLAS_acml_mp_LIBRARY
 BLAS_acml_mp_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: BLAS_atlas_LIBRARY
+BLAS_atlas_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: BLAS_blas_LIBRARY
 BLAS_blas_LIBRARY-ADVANCED:INTERNAL=1
 //Have function sgemm_
@@ -578,6 +650,8 @@ BLAS_dxml_LIBRARY-ADVANCED:INTERNAL=1
 BLAS_essl_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: BLAS_f77blas_LIBRARY
 BLAS_f77blas_LIBRARY-ADVANCED:INTERNAL=1
+//Have function dgemm_
+BLAS_f77blas_atlas_WORKS:INTERNAL=1
 //ADVANCED property for variable: BLAS_goto2_LIBRARY
 BLAS_goto2_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: BLAS_mkl_LIBRARY
@@ -815,19 +889,31 @@ FFTW_LONGDOUBLE_OPENMP_LIB-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: FFTW_LONGDOUBLE_THREADS_LIB
 FFTW_LONGDOUBLE_THREADS_LIB-ADVANCED:INTERNAL=1
 //Details about finding BLAS
-FIND_PACKAGE_MESSAGE_DETAILS_BLAS:INTERNAL=[/usr/lib/x86_64-linux-gnu/libblas.so][v()]
+FIND_PACKAGE_MESSAGE_DETAILS_BLAS:INTERNAL=[/usr/lib/x86_64-linux-gnu/libf77blas.so;/usr/lib/x86_64-linux-gnu/libatlas.so][v()]
 //Details about finding FFTW
 FIND_PACKAGE_MESSAGE_DETAILS_FFTW:INTERNAL=[/usr/include][c ][v()]
 //Details about finding GSL
 FIND_PACKAGE_MESSAGE_DETAILS_GSL:INTERNAL=[/usr/include][/usr/lib/x86_64-linux-gnu/libgsl.so][/usr/lib/x86_64-linux-gnu/libgslcblas.so][v2.5()]
+//Details about finding Glog
+FIND_PACKAGE_MESSAGE_DETAILS_Glog:INTERNAL=[/usr/include][/usr/lib/x86_64-linux-gnu/libglog.so][v()]
+//Details about finding OpenMP
+FIND_PACKAGE_MESSAGE_DETAILS_OpenMP:INTERNAL=[TRUE][c ][v()]
+//Details about finding OpenMP_CXX
+FIND_PACKAGE_MESSAGE_DETAILS_OpenMP_CXX:INTERNAL=[-fopenmp][/usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so][/usr/lib/x86_64-linux-gnu/libpthread.so][v()]
 //Details about finding PNG
 FIND_PACKAGE_MESSAGE_DETAILS_PNG:INTERNAL=[/usr/lib/x86_64-linux-gnu/libpng.so][/usr/include][v1.6.37()]
 //Details about finding PkgConfig
 FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/bin/pkg-config][v0.29.1()]
+//Details about finding PythonInterp
+FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/home/niklas/programs/anaconda3/bin/python][v3.8.3()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //Details about finding ZLIB
 FIND_PACKAGE_MESSAGE_DETAILS_ZLIB:INTERNAL=[/usr/lib/x86_64-linux-gnu/libz.so][/usr/include][v1.2.11()]
+//ADVANCED property for variable: GLOG_INCLUDE_DIR
+GLOG_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GLOG_LIBRARY
+GLOG_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: GSL_CBLAS_LIBRARY
 GSL_CBLAS_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: GSL_CBLAS_LIBRARY_DEBUG
@@ -905,6 +991,20 @@ LAPACK_mkl_lapack_LIBRARY-ADVANCED:INTERNAL=1
 LAPACK_openblas_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: LAPACK_vecLib_LIBRARY
 LAPACK_vecLib_LIBRARY-ADVANCED:INTERNAL=1
+//Result of TRY_COMPILE
+OpenMP_COMPILE_RESULT_CXX_fopenmp:INTERNAL=TRUE
+//ADVANCED property for variable: OpenMP_CXX_FLAGS
+OpenMP_CXX_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OpenMP_CXX_LIB_NAMES
+OpenMP_CXX_LIB_NAMES-ADVANCED:INTERNAL=1
+//CXX compiler's OpenMP specification date
+OpenMP_CXX_SPEC_DATE:INTERNAL=201511
+//Result of TRY_COMPILE
+OpenMP_SPECTEST_CXX_:INTERNAL=TRUE
+//ADVANCED property for variable: OpenMP_gomp_LIBRARY
+OpenMP_gomp_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OpenMP_pthread_LIBRARY
+OpenMP_pthread_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
 PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
 PKG_FFTW_CFLAGS:INTERNAL=
@@ -948,6 +1048,8 @@ PNG_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 PNG_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: PNG_PNG_INCLUDE_DIR
 PNG_PNG_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_EXECUTABLE
+PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: TIFF_INCLUDE_DIR
 TIFF_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: TIFF_LIBRARY_DEBUG
