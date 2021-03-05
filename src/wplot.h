@@ -1,4 +1,5 @@
 #include<stdlib.h>
+#include<vector>
 using namespace std;
 
 struct plot_params
@@ -7,13 +8,12 @@ struct plot_params
     double saturation_density;
     double nucleon_mass;
     double degeneracy;
-    double mass_scalar;
-    double mass_vector;
-    double exp_a;
-    double exp_b;
+    vector<double> scalar_exp;
+    vector<double> vec_exp;
+    vector<double> scalar_coeff;
+    vector<double> vec_coeff;
     double temperature;
-    double a;
-    double b;
+    
 };
 
 void energy_pp_plot(double start, double step, double nmax, void * params, int num);

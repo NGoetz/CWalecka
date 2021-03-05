@@ -30,15 +30,14 @@ void energy_pp_plot(double start, double step, double nmax, void * params, int n
         double saturation_density=(((struct plot_params *) params))[i].saturation_density;
         double nucleon_mass=(((struct plot_params *) params))[i].nucleon_mass;
         double degeneracy=(( (struct plot_params *) params))[i].degeneracy;
-        double mass_scalar=(((struct plot_params *) params))[i].mass_scalar;
-        double mass_vector=((( struct plot_params *) params))[i].mass_vector;
-        double exp_a=(((struct plot_params *) params))[i].exp_a;
-        double exp_b=(( (struct plot_params *) params)) [i].exp_b;
-        pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector, exp_a, exp_b,false);
+        vector<double> scalar_exp=(((struct plot_params *) params))[i].scalar_exp;
+        vector<double> vec_exp=(( (struct plot_params *) params)) [i].vec_exp;
+        vector<double> scalar_coeff=(((struct plot_params *) params))[i].scalar_coeff;
+        vector<double> vec_coeff=(( (struct plot_params *) params)) [i].vec_coeff;
         auto t = arange<double>(start, nmax,step);
         auto s = arange<double>(start, nmax, step);
         for (int i=0; i<t.size(); i=i+1){
-            s[i]=energy_pp_minus_mass_solv(degeneracy, nucleon_mass,t[i]*saturation_density, mass_vector, mass_scalar, res.first, exp_a, res.second, exp_b);
+            s[i]=energy_pp_minus_mass_solv(degeneracy, nucleon_mass,t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp);
         }
         
         matplot::plot(t,s)->line_width(3);
@@ -68,15 +67,14 @@ void energy_pp_dn_plot(double start, double step, double nmax, void * params){
     double saturation_density=((struct plot_params *) params)->saturation_density;
     double nucleon_mass=((struct plot_params *) params)->nucleon_mass;
     double degeneracy=(( struct plot_params *) params )->degeneracy;
-    double mass_scalar=((struct plot_params *) params)->mass_scalar;
-    double mass_vector=(( struct plot_params *) params )->mass_vector;
-    double exp_a=((struct plot_params *) params)->exp_a;
-    double exp_b=(( struct plot_params *) params )->exp_b;
-    pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector, exp_a, exp_b, false);
+    vector<double> scalar_exp=(((struct plot_params *) params))->scalar_exp;
+    vector<double> vec_exp=(( (struct plot_params *) params))->vec_exp;
+    vector<double> scalar_coeff=(((struct plot_params *) params))->scalar_coeff;
+    vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
     for (int i=0; i<t.size(); i=i+1){
-        s[i]=energy_pp_minus_mass_dn_solv(degeneracy, nucleon_mass,t[i]*saturation_density, mass_vector, mass_scalar, res.first, exp_a, res.second,exp_b);
+        s[i]=energy_pp_minus_mass_dn_solv(degeneracy, nucleon_mass,t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp);
     }
 
     auto ax = matplot::gca();
@@ -94,15 +92,14 @@ void press_plot(double start, double step, double nmax, void * params){
     double saturation_density=((struct plot_params *) params)->saturation_density;
     double nucleon_mass=((struct plot_params *) params)->nucleon_mass;
     double degeneracy=(( struct plot_params *) params )->degeneracy;
-    double mass_scalar=((struct plot_params *) params)->mass_scalar;
-    double mass_vector=(( struct plot_params *) params )->mass_vector;
-    double exp_a=((struct plot_params *) params)->exp_a;
-    double exp_b=(( struct plot_params *) params )->exp_b;
-    pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector, exp_a, exp_b, false);
+    vector<double> scalar_exp=(((struct plot_params *) params))->scalar_exp;
+    vector<double> vec_exp=(( (struct plot_params *) params))->vec_exp;
+    vector<double> scalar_coeff=(((struct plot_params *) params))->scalar_coeff;
+    vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
     for (int i=0; i<t.size(); i=i+1){
-        s[i]=press_solv(degeneracy, nucleon_mass,t[i]*saturation_density, mass_vector, mass_scalar, res.first, exp_a, res.second,exp_b);
+        s[i]=press_solv(degeneracy, nucleon_mass,t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp);
     }
 
     auto ax = matplot::gca();
@@ -122,15 +119,14 @@ void scalar_density_plot(double start, double step, double nmax, void * params){
     double saturation_density=((struct plot_params *) params)->saturation_density;
     double nucleon_mass=((struct plot_params *) params)->nucleon_mass;
     double degeneracy=(( struct plot_params *) params )->degeneracy;
-    double mass_scalar=((struct plot_params *) params)->mass_scalar;
-    double mass_vector=(( struct plot_params *) params )->mass_vector;
-    double exp_a=((struct plot_params *) params)->exp_a;
-    double exp_b=(( struct plot_params *) params )->exp_b;
-    pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector,exp_a,exp_b, false);
+    vector<double> scalar_exp=(((struct plot_params *) params))->scalar_exp;
+    vector<double> vec_exp=(( (struct plot_params *) params))->vec_exp;
+    vector<double> scalar_coeff=(((struct plot_params *) params))->scalar_coeff;
+    vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
     for (int i=0; i<t.size(); i=i+1){
-        s[i]=get_mass_eff_scalar_density(degeneracy, nucleon_mass,res.first, exp_a,t[i]*saturation_density, mass_scalar, false).second;
+        s[i]=get_mass_eff_scalar_density(degeneracy, nucleon_mass,scalar_coeff , scalar_exp, t[i]*saturation_density, false).second;
     }
 
     auto ax = matplot::gca();
@@ -148,15 +144,14 @@ void eff_mass_plot_p(double start, double step, double nmax, void * params, int 
         double saturation_density=(((struct plot_params *) params))[i].saturation_density;
         double nucleon_mass=(((struct plot_params *) params))[i].nucleon_mass;
         double degeneracy=(( (struct plot_params *) params))[i].degeneracy;
-        double mass_scalar=(((struct plot_params *) params))[i].mass_scalar;
-        double mass_vector=((( struct plot_params *) params))[i].mass_vector;
-        double exp_a=(((struct plot_params *) params))[i].exp_a;
-        double exp_b=(( (struct plot_params *) params)) [i].exp_b;
-        pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector,exp_a,exp_b, false);
+        vector<double> scalar_exp=(((struct plot_params *) params))[i].scalar_exp;
+        vector<double> vec_exp=(( (struct plot_params *) params))[i].vec_exp;
+        vector<double> scalar_coeff=(((struct plot_params *) params))[i].scalar_coeff;
+        vector<double> vec_coeff=(( (struct plot_params *) params))[i].vec_coeff;
         auto t = arange<double>(start, nmax,step);
         auto s = arange<double>(start, nmax, step);
         for (int i=0; i<t.size(); i=i+1){
-            s[i]=get_mass_eff_scalar_density(degeneracy, nucleon_mass,res.first,exp_a,t[i]*saturation_density, mass_scalar, false).first/nucleon_mass;
+            s[i]=get_mass_eff_scalar_density(degeneracy, nucleon_mass,scalar_coeff,scalar_exp,t[i]*saturation_density, false).first/nucleon_mass;
             t[i]=fmom(degeneracy,t[i]*saturation_density);
         }
         matplot::plot(t,s)->line_width(3);
@@ -188,12 +183,10 @@ void T_press_plot(double start, double step, double nmax, void * params, int num
         double saturation_density=(((struct plot_params *) params))[i].saturation_density;
         double nucleon_mass=(((struct plot_params *) params))[i].nucleon_mass;
         double degeneracy=(( (struct plot_params *) params))[i].degeneracy;
-        double mass_scalar=(((struct plot_params *) params))[i].mass_scalar;
-        double mass_vector=((( struct plot_params *) params))[i].mass_vector;
-        double exp_a=(((struct plot_params *) params))[i].exp_a;
-        double exp_b=(( (struct plot_params *) params)) [i].exp_b;
-        double a=(((struct plot_params *) params))[i].a;
-        double b=(( (struct plot_params *) params)) [i].b;
+        vector<double> scalar_exp=(((struct plot_params *) params))[i].scalar_exp;
+        vector<double> vec_exp=(( (struct plot_params *) params))[i].vec_exp;
+        vector<double> scalar_coeff=(((struct plot_params *) params))[i].scalar_coeff;
+        vector<double> vec_coeff=(( (struct plot_params *) params))[i].vec_coeff;
         double temperature=(( (struct plot_params *) params)) [i].temperature;
     
         auto t = arange<double>(start, nmax,step);
@@ -202,9 +195,9 @@ void T_press_plot(double start, double step, double nmax, void * params, int num
         auto w = arange<double>(start, nmax, step);
         
         for (int i=0; i<t.size(); i=i+1){
-            s[i]=T_press_solv(degeneracy, nucleon_mass, t[i]*saturation_density, mass_vector, mass_scalar, a,exp_a, b,exp_b, temperature)/pow((conv),3);
-            v[i]=1e6*T_press_dn_solv(degeneracy, nucleon_mass, t[i]*saturation_density, mass_vector, mass_scalar, a,exp_a, b,exp_b, temperature)/pow((conv),3);
-            w[i]=1e11*T_press_dn2_solv(degeneracy, nucleon_mass, t[i]*saturation_density, mass_vector, mass_scalar, a,exp_a, b,exp_b, temperature)/pow((conv),3);
+            s[i]=T_press_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+            v[i]=1e6*T_press_dn_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+            w[i]=1e11*T_press_dn2_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
           
         }
         
@@ -216,6 +209,7 @@ void T_press_plot(double start, double step, double nmax, void * params, int num
         matplot::plot(ax,t,v)->line_width(3);
         matplot::plot(ax,t,w)->line_width(3);
         matplot::title("Pressure at critical temperature");
+        matplot::legend(ax, {"Pressure", "First derivative", "Second derivative"});
         matplot::xlabel("n/n_0");
         matplot::ylabel("P (MeV fm-3)");
         ax->y_axis().label_font_size(12);
@@ -238,16 +232,15 @@ void T_energy_pp_plot(double start, double step, double nmax, void * params){
     double saturation_density=((struct plot_params *) params)->saturation_density;
     double nucleon_mass=((struct plot_params *) params)->nucleon_mass;
     double degeneracy=(( struct plot_params *) params )->degeneracy;
-    double mass_scalar=((struct plot_params *) params)->mass_scalar;
-    double mass_vector=(( struct plot_params *) params )->mass_vector;
     double temperature=(( struct plot_params *) params )->temperature;
-    double exp_a=((struct plot_params *) params)->exp_a;
-    double exp_b=(( struct plot_params *) params )->exp_b;
+    vector<double> scalar_exp=(((struct plot_params *) params))->scalar_exp;
+    vector<double> vec_exp=(( (struct plot_params *) params))->vec_exp;
+    vector<double> scalar_coeff=(((struct plot_params *) params))->scalar_coeff;
+    vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
-    pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector,exp_a,exp_b, false);
     for (int i=0; i<t.size(); i=i+1){
-        s[i]=T_eps_solv(degeneracy, nucleon_mass, t[i]*saturation_density, mass_vector, mass_scalar, res.first,exp_a, res.second,exp_b,temperature)/(t[i]*saturation_density)-nucleon_mass;
+        s[i]=T_eps_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp,temperature)/(t[i]*saturation_density)-nucleon_mass;
     }
     auto ax = matplot::gca();
    
@@ -277,16 +270,16 @@ void T_mass_eff_plot(double start, double step, double nmax, void * params){
     double saturation_density=((struct plot_params *) params)->saturation_density;
     double nucleon_mass=((struct plot_params *) params)->nucleon_mass;
     double degeneracy=(( struct plot_params *) params )->degeneracy;
-    double mass_scalar=((struct plot_params *) params)->mass_scalar;
-    double mass_vector=(( struct plot_params *) params )->mass_vector;
     double temperature=(( struct plot_params *) params )->temperature;
-    double exp_a=((struct plot_params *) params)->exp_a;
-    double exp_b=(( struct plot_params *) params )->exp_b;
+    vector<double> scalar_exp=(((struct plot_params *) params))->scalar_exp;
+    vector<double> vec_exp=(( (struct plot_params *) params))->vec_exp;
+    vector<double> scalar_coeff=(((struct plot_params *) params))->scalar_coeff;
+    vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
-    pair<double, double> res=get_coeff(nucleon_mass, saturation_density, binding_energy, degeneracy, mass_scalar, mass_vector, exp_a,exp_b,false);
+    
     for (int i=0; i<t.size(); i=i+1){
-        tuple<double, double,double,bool> res2=get_T_mass_eff_mu_eff_scalar_density(res.first,exp_a,res.second, exp_b,nucleon_mass, t[i]*saturation_density,  temperature, degeneracy, mass_scalar, false);
+        tuple<double, double,double,bool> res2=get_T_mass_eff_mu_eff_scalar_density(scalar_coeff, scalar_exp, vec_coeff, vec_exp,nucleon_mass, t[i]*saturation_density,  temperature, degeneracy, false);
         s[i]=get<0>(res2);
         t[i] = fmom(degeneracy,t[i]*saturation_density);
     }
@@ -303,25 +296,12 @@ void T_mass_eff_plot(double start, double step, double nmax, void * params){
     } while (cin.get() != '\n');
 }
 
-//struct for the parameters for finding the interaction terms
-struct interaction_params
-{
-    double nucleon_mass;
-    double degeneracy;
-    double saturation_density;
-    double binding_energy;
-    double critical_temperature;
-    double critical_density;
-    double mass_scalar;
-    double mass_vector;
-};
+
 
 void interactions_plot(double * lowerbound, double * upperbound, double step, void * params){
     gsl_set_error_handler(&gsl_handler);
     double nucleon_mass=((struct interaction_params *) params)->nucleon_mass;
     double degeneracy=((struct interaction_params *) params)->degeneracy;
-    double mass_vector=((struct interaction_params *) params)->mass_vector;
-    double mass_scalar=((struct interaction_params *) params)->mass_scalar;
     double saturation_density=((struct interaction_params *) params)->saturation_density;
     double binding_energy=((struct interaction_params *) params)->binding_energy;
     double critical_temperature=((struct interaction_params *) params)->critical_temperature;
@@ -330,23 +310,24 @@ void interactions_plot(double * lowerbound, double * upperbound, double step, vo
     auto y = arange<double>(lowerbound[1], upperbound[1], step);
     tuple<double, double,double,double,double, bool>res;
     vector<vector<double>> data = {};
+    unsigned int terms [2]={1,1};
     for (int i=0; i<x.size(); i=i+1){
         vector<double> storage;
         for (int j=0; j<y.size(); j=j+1){
            
             try{
-                struct interaction_params p={nucleon_mass, degeneracy, saturation_density,binding_energy, critical_temperature, critical_density, mass_scalar, mass_vector };
-                res= get_interaction_4D(&p, false,x[i],y[j],10, 10);
-                double x0=get<2>(res);//a)
-                double x3=get<1>(res);//exp_b
-                double x1=get<3>(res);//b
-                double x2=get<0>(res);//exp_a
+                struct interaction_params p={nucleon_mass, degeneracy, saturation_density,binding_energy, critical_temperature, critical_density, terms };
+                res= get_interaction_4D(&p, false,{x[i]},{y[j]},{10}, {10});
+                double x0=get<2>(res);//scalar_coeff
+                double x3=get<1>(res);//vec_exp
+                double x1=get<3>(res);//vec_coeff
+                double x2=get<0>(res);//scalar_exp
                 
-                pair<double, double> output=get_mass_eff_scalar_density(degeneracy, nucleon_mass,x0, x2, saturation_density,mass_scalar, false);
-                double y0 =binding_energy-nucleon_mass+eps_over_n(degeneracy, output.first, saturation_density, x0, x2, x1, x3, output.second, mass_vector, mass_scalar);
-                double y1 =eps_over_n_dn(degeneracy, output.first, saturation_density,x0, x2, x1, x3, output.second, mass_vector, mass_scalar);
-                double y2 =T_press_dn_solv(degeneracy, nucleon_mass, critical_density, mass_vector, mass_scalar, x0, x2, x1, x3, critical_temperature);
-                double y3 =T_press_dn2_solv(degeneracy, nucleon_mass, critical_density, mass_vector, mass_scalar, x0, x2,x1, x3, critical_temperature);
+                pair<double, double> output=get_mass_eff_scalar_density(degeneracy, nucleon_mass,{x0}, {x2}, saturation_density, false);
+                double y0 =binding_energy-nucleon_mass+eps_over_n(degeneracy, output.first, saturation_density, {x0}, {x2}, {x1}, {x3}, output.second);
+                double y1 =eps_over_n_dn(degeneracy, output.first, saturation_density,{x0}, {x2}, {x1}, {x3}, output.second);
+                double y2 =T_press_dn_solv(degeneracy, nucleon_mass, critical_density,  {x0}, {x2}, {x1}, {x3}, critical_temperature);
+                double y3 =T_press_dn2_solv(degeneracy, nucleon_mass, critical_density,  {x0}, {x2}, {x1}, {x3}, critical_temperature);
                 storage.push_back(log(abs(y0)+abs(y1)+abs(y2)+abs(y3)));
             }catch(int exception)
         {
