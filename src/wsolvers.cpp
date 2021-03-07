@@ -380,31 +380,16 @@ int interaction_root(const gsl_vector * x, void *params, gsl_vector * f){
     unsigned int * terms =((struct interaction_params *) params)->terms;
     
     vector<double> scalar_coeff, scalar_exp, vector_coeff, vector_exp;
-  
-    const double x0=gsl_vector_get(x,0);//coefficient 1
-    const double x1=(gsl_vector_get(x,1));//coefficient 2
-    const double x2=gsl_vector_get(x,2);//exponent 1
-    const double x3=gsl_vector_get(x,3);//exponent 2
-    switch(terms[0]){
-        case 0:
-            scalar_coeff={};
-            scalar_exp={};
-            vector_coeff={x0,x1};
-            vector_exp={x2,x3};
-            break;
-        case 1:
-            scalar_coeff={x0};
-            scalar_exp={x2};
-            vector_coeff={x1};
-            vector_exp={x3};
-            break;
-        case 2:
-            scalar_coeff={x0,x1};
-            scalar_exp={};
-            vector_coeff={};
-            vector_exp={x2,x3};
-            break;
+    
+     for(unsigned int i=0; i<terms[0];i++){
+        scalar_exp.push_back(gsl_vector_get(x,i));
+        scalar_coeff.push_back(gsl_vector_get(x,terms[0]+terms[1]+i));
     }
+    for(unsigned int i=terms[0]; i<terms[0]+terms[1];i++){
+        vector_exp.push_back(gsl_vector_get(x,i));
+        vector_coeff.push_back(gsl_vector_get(x,terms[0]+terms[1]+i));
+    }
+  
     pair<double, double> output=get_mass_eff_scalar_density(degeneracy, nucleon_mass,scalar_coeff, scalar_exp, saturation_density, false);
     //predict binding at demanded saturation density
     const double y0 =binding_energy-nucleon_mass+eps_over_n(degeneracy, output.first, saturation_density, scalar_coeff, scalar_exp,vector_coeff, vector_exp, output.second);
@@ -435,7 +420,7 @@ int print_state_interaction (size_t iter, gsl_multiroot_fsolver * s){
     return 0;
 }
 //find the coefficients and exponents of 2 terms with the nuclear saturation point and the nuclear liquid/gas transition
-tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, bool print, vector<double> init_scalar_exp, vector<double> init_vec_exp, vector<double> init_scalar_coeff, vector<double> init_vec_coeff) {
+tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, bool print, vector<double> init_exp,  vector<double> init_coeff) {
     gsl_set_error_handler(&gsl_handler);
     int status;
     size_t iter = 0;
@@ -448,20 +433,11 @@ tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, b
     unsigned int * terms=((struct interaction_params *) p)->terms;
     assert(terms[0]+terms[1]==2);
     
-    double x_init[4];
-    for(unsigned int i=0; i<terms[0];i++){
-        x_init[i]=init_scalar_coeff[i];
-        x_init[2+i]=init_scalar_exp[i];
-    }
-    for(unsigned int i=terms[0]; i<terms[0]+terms[1];i++){
-        x_init[i]=init_vec_coeff[i-terms[0]];
-        x_init[2+i]=init_vec_exp[i-terms[0]];
-    }
-    
-    gsl_vector_set (x, 0, x_init[0]);
-    gsl_vector_set (x, 1, x_init[1]);
-    gsl_vector_set (x, 2, x_init[2]);
-    gsl_vector_set (x, 3, x_init[3]);
+      
+    gsl_vector_set (x, 0, init_exp[0]);
+    gsl_vector_set (x, 1, init_exp[1]);
+    gsl_vector_set (x, 2, init_coeff[0]);
+    gsl_vector_set (x, 3, init_coeff[1]);
     
     gsl_multiroot_fsolver_set (s, &f, x);
 
@@ -694,7 +670,7 @@ void interaction_4D_grid(double nucleon_mass,double critical_temperature, double
     int num_coeff1_guess=ceil((boundaries[0][1]-boundaries[0][0])/boundaries[0][2]);
     int num_threads=ceil(omp_get_max_threads()-1);
     
-#pragma omp parallel num_threads(num_threads) shared(p, solution_storage, num_sol, count)
+#pragma omp parallel num_threads(1) shared(p, solution_storage, num_sol, count)
 {
 #pragma omp for
     for(int i=0; i<=num_coeff1_guess; i+=1 ){
@@ -704,6 +680,7 @@ void interaction_4D_grid(double nucleon_mass,double critical_temperature, double
 
             for(double exp1_guess=boundaries[2][0]; exp1_guess<=boundaries[2][1]; exp1_guess+=boundaries[2][2] ){
                 for(double exp2_guess=boundaries[3][0]; exp2_guess<=boundaries[3][1]; exp2_guess+=boundaries[3][2] ){
+                    //cout<<coeff1_guess<<" "<<coeff2_guess<<" "<<exp1_guess<<" "<<exp2_guess<<endl;
                     try{
                          
                     tuple<double, double,double,double, double, bool> result= get_interaction_4D(&p, false,{exp1_guess, exp2_guess}, {coeff1_guess, coeff2_guess});
@@ -724,7 +701,7 @@ void interaction_4D_grid(double nucleon_mass,double critical_temperature, double
                             }
                         }
                         
-                        bool validated=validate_interaction(get<4>(result), {coeff1_guess, coeff2_guess}, {exp1_guess, exp2_guess}, {(get<0>(result)), (get<1>(result))}, {abs(get<2>(result)), abs(get<3>(result))}, filename, timestamp, &p);
+                        bool validated=validate_interaction(get<4>(result), {coeff1_guess, coeff2_guess}, {exp1_guess, exp2_guess}, {(get<2>(result)), (get<3>(result))}, {abs(get<0>(result)), abs(get<1>(result))}, filename, timestamp, &p);
                         if(!validated){
                           
                             continue;
@@ -794,6 +771,7 @@ void interaction_4D_crit_grid(double nucleon_mass, double binding_energy, double
     fclose(pFile); 
     for(double crit_T=boundaries_crit[0][0]; crit_T<=boundaries_crit[0][1];crit_T+=boundaries_crit[0][2] ){
         for(double crit_n=boundaries_crit[1][0]; crit_n<=boundaries_crit[1][1];crit_n+=boundaries_crit[1][2] ){
+            //cout<<crit_T<<" "<<crit_n<<endl;
             interaction_4D_grid( nucleon_mass, crit_T,  crit_n,  binding_energy,  saturation_density,  degeneracy,boundaries_model, terms, filename, false,num_sol);
         }
     }

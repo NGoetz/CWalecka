@@ -317,7 +317,7 @@ void interactions_plot(double * lowerbound, double * upperbound, double step, vo
            
             try{
                 struct interaction_params p={nucleon_mass, degeneracy, saturation_density,binding_energy, critical_temperature, critical_density, terms };
-                res= get_interaction_4D(&p, false,{x[i]},{y[j]},{10}, {10});
+                res= get_interaction_4D(&p, false,{x[i],y[j]},{1e-5,1e-5});
                 double x0=get<2>(res);//scalar_coeff
                 double x3=get<1>(res);//vec_exp
                 double x1=get<3>(res);//vec_coeff

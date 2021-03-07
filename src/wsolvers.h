@@ -60,7 +60,7 @@ int crit_root(const gsl_vector * x, void *params, gsl_vector * f);
 pair<double, double> get_crit(double nucleon_mass,double saturation_density, double binding_energy, double degeneracy, vector<double> scalar_exp, vector<double> vec_exp, bool print, double crit_T=19.09, double crit_density=540000, vector<double> scalar_coeff={0.0}, vector<double> vec_coeff={0.0});
 int interaction_root(const gsl_vector * x, void *params, gsl_vector * f);
 int print_state_interaction (size_t iter, gsl_multiroot_fsolver * s);
-tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, bool print,vector<double> init_scalar_exp={2.05}, vector<double> int_vec_exp={2.05},vector<double> init_scalar_coeff={10*4*M_PI/pow(550,2.0)}, vector<double> init_vec_coeff={10*4*M_PI/pow(783,2.0)});
+tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, bool print,vector<double> init_exp={2.05,2.05},vector<double> init_coeff={10*4*M_PI/pow(550,2.0),10*4*M_PI/pow(783,2.0)});
 double energy_pp_minus_mass_solv(double degeneracy, double nucleon_mass,double number_density, vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
 double energy_pp_minus_mass_dn_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
 double press_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
