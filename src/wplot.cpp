@@ -8,6 +8,7 @@
 #include <iostream>
 #include <matplot/matplot.h>
 #include <vector>
+#include <cassert>
 
 //the convergence factor from fm to MeV
 double const conv=197.3;
@@ -39,7 +40,7 @@ void energy_pp_plot(double start, double step, double nmax, void * params, int n
         for (int i=0; i<t.size(); i=i+1){
             s[i]=energy_pp_minus_mass_solv(degeneracy, nucleon_mass,t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp);
         }
-        
+
         matplot::plot(t,s)->line_width(3);
         matplot::hold(matplot::on);
         matplot::title("Energy/nucleon at T=0");
@@ -49,14 +50,14 @@ void energy_pp_plot(double start, double step, double nmax, void * params, int n
         ax->y_axis().label_weight("bold");
         ax->x_axis().label_font_size(12);
         ax->x_axis().label_weight("bold");
-    
-      
+
+
     }
-    matplot::legend(ax, {"Walecka solution", "New solution"});
+    auto l=matplot::legend(ax, {"V1S1", "V2S0", "V0S2"});
     matplot::hold(matplot::off);
     matplot::show();
 
-    do 
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -78,10 +79,10 @@ void energy_pp_dn_plot(double start, double step, double nmax, void * params){
     }
 
     auto ax = matplot::gca();
-    
+
     matplot::plot(ax,t,s);
-    
-    do 
+
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -98,17 +99,19 @@ void press_plot(double start, double step, double nmax, void * params){
     vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
+    auto sdn = arange<double>(start, nmax, step);
     for (int i=0; i<t.size(); i=i+1){
         s[i]=press_solv(degeneracy, nucleon_mass,t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp);
+        sdn[i]=press_dn_solv(degeneracy, nucleon_mass,t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp)*1e5;
     }
-
+    matplot::hold(matplot::on);
     auto ax = matplot::gca();
-    matplot::ylim(matplot::manual);
-    matplot::ylim({*min_element(s.begin(), s.end()),*max_element(s.begin(), s.end())});
-    
-    matplot::plot(ax,t,s);
-    
-    do 
+
+    matplot::plot(ax,t,s)->line_width(3);;
+    matplot::plot(ax,t,sdn)->line_width(3);;
+    auto l=matplot::legend(ax, {"pressure", "derivative"});
+    matplot::hold(matplot::off);
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -131,7 +134,7 @@ void scalar_density_plot(double start, double step, double nmax, void * params){
 
     auto ax = matplot::gca();
     matplot::plot(ax,t,s);
-    do 
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -163,14 +166,14 @@ void eff_mass_plot_p(double start, double step, double nmax, void * params, int 
         ax->y_axis().label_weight("bold");
         ax->x_axis().label_font_size(12);
         ax->x_axis().label_weight("bold");
-    
-      
+
+
     }
-    matplot::legend(ax, {"Walecka solution", "New solution"});
+    matplot::legend(ax, {"V0S2"});
     matplot::hold(matplot::off);
     matplot::show();
-    
-    do 
+
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -179,6 +182,7 @@ void eff_mass_plot_p(double start, double step, double nmax, void * params, int 
 void T_press_plot(double start, double step, double nmax, void * params, int num){
     auto ax = matplot::gca();
     for (int i=0; i<num; i++){
+        cout<<i<<endl;
         double binding_energy =(((struct plot_params *) params))[i].binding_energy;
         double saturation_density=(((struct plot_params *) params))[i].saturation_density;
         double nucleon_mass=(((struct plot_params *) params))[i].nucleon_mass;
@@ -188,28 +192,31 @@ void T_press_plot(double start, double step, double nmax, void * params, int num
         vector<double> scalar_coeff=(((struct plot_params *) params))[i].scalar_coeff;
         vector<double> vec_coeff=(( (struct plot_params *) params))[i].vec_coeff;
         double temperature=(( (struct plot_params *) params)) [i].temperature;
-    
+        assert(temperature>0.2);
         auto t = arange<double>(start, nmax,step);
         auto s = arange<double>(start, nmax, step);
         auto v = arange<double>(start, nmax, step);
         auto w = arange<double>(start, nmax, step);
-        
+
         for (int i=0; i<t.size(); i=i+1){
+            //cout<<t[i]<<endl;
+            //cout<<" "<<vec_coeff[0]<<" "<<vec_exp[0]<<endl;
             s[i]=T_press_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
-            v[i]=1e6*T_press_dn_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
-            w[i]=1e11*T_press_dn2_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
-          
+           // v[i]=1e6*T_press_dn_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+            //w[i]=1e11*T_press_dn2_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+
         }
-        
-       // matplot::ylim(matplot::manual);
-        //matplot::ylim({0,1});
-        
+
+       //matplot::ylim(matplot::manual);
+        //matplot::ylim({0.4,1});
+
         matplot::hold(matplot::on);
-        matplot::plot(ax,t,s)->line_width(3);
-        matplot::plot(ax,t,v)->line_width(3);
-        matplot::plot(ax,t,w)->line_width(3);
-        matplot::title("Pressure at critical temperature");
-        matplot::legend(ax, {"Pressure", "First derivative", "Second derivative"});
+        matplot::plot(ax,t,s)->line_width(2);
+        //matplot::plot(ax,t,v)->line_width(3);
+        //matplot::plot(ax,t,w)->line_width(3);
+        matplot::title("Critical pressure for all 2 term models");
+        auto l=matplot::legend(ax, {"V1S1", "V2S0", "V0S2"});
+        l->location(matplot::legend::general_alignment::topleft);
         matplot::xlabel("n/n_0");
         matplot::ylabel("P (MeV fm-3)");
         ax->y_axis().label_font_size(12);
@@ -220,7 +227,7 @@ void T_press_plot(double start, double step, double nmax, void * params, int num
     matplot::hold(matplot::off);
     //matplot::legend(ax, {"Walecka solution", "New solution"});
     matplot::show();
-    do 
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -243,10 +250,10 @@ void T_energy_pp_plot(double start, double step, double nmax, void * params){
         s[i]=T_eps_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp,temperature)/(t[i]*saturation_density)-nucleon_mass;
     }
     auto ax = matplot::gca();
-   
+
     matplot::ylim(matplot::manual);
     matplot::ylim({*min_element(s.begin(), s.end()),*max_element(s.begin(), s.end())});
-    
+
     matplot::plot(ax,t,s)->line_width(3);
     matplot::hold(matplot::on);
     matplot::title("Energy density");
@@ -258,8 +265,8 @@ void T_energy_pp_plot(double start, double step, double nmax, void * params){
     ax->x_axis().label_weight("bold");
     matplot::hold(matplot::off);
     matplot::show();
-    
-    do 
+
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -277,20 +284,20 @@ void T_mass_eff_plot(double start, double step, double nmax, void * params){
     vector<double> vec_coeff=(( (struct plot_params *) params))->vec_coeff;
     auto t = arange<double>(start, nmax,step);
     auto s = arange<double>(start, nmax, step);
-    
+
     for (int i=0; i<t.size(); i=i+1){
         tuple<double, double,double,bool> res2=get_T_mass_eff_mu_eff_scalar_density(scalar_coeff, scalar_exp, vec_coeff, vec_exp,nucleon_mass, t[i]*saturation_density,  temperature, degeneracy, false);
         s[i]=get<0>(res2);
         t[i] = fmom(degeneracy,t[i]*saturation_density);
     }
-   
+
     auto ax = matplot::gca();
     matplot::ylim(matplot::manual);
     matplot::ylim({*min_element(s.begin(), s.end()),*max_element(s.begin(), s.end())});
-    
+
     matplot::plot(ax,t,s);
-    
-    do 
+
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
@@ -314,7 +321,7 @@ void interactions_plot(double * lowerbound, double * upperbound, double step, vo
     for (int i=0; i<x.size(); i=i+1){
         vector<double> storage;
         for (int j=0; j<y.size(); j=j+1){
-           
+
             try{
                 struct interaction_params p={nucleon_mass, degeneracy, saturation_density,binding_energy, critical_temperature, critical_density, terms };
                 res= get_interaction_4D(&p, false,{x[i],y[j]},{1e-5,1e-5});
@@ -322,7 +329,7 @@ void interactions_plot(double * lowerbound, double * upperbound, double step, vo
                 double x3=get<1>(res);//vec_exp
                 double x1=get<3>(res);//vec_coeff
                 double x2=get<0>(res);//scalar_exp
-                
+
                 pair<double, double> output=get_mass_eff_scalar_density(degeneracy, nucleon_mass,{x0}, {x2}, saturation_density, false);
                 double y0 =binding_energy-nucleon_mass+eps_over_n(degeneracy, output.first, saturation_density, {x0}, {x2}, {x1}, {x3}, output.second);
                 double y1 =eps_over_n_dn(degeneracy, output.first, saturation_density,{x0}, {x2}, {x1}, {x3}, output.second);
@@ -333,11 +340,11 @@ void interactions_plot(double * lowerbound, double * upperbound, double step, vo
         {
             storage.push_back(1e6);
         }
-        
-            
+
+
         }
         data.push_back(storage);
-        
+
     }
     auto ax = matplot::gca();
     vector<string>xs,ys;
@@ -351,10 +358,9 @@ void interactions_plot(double * lowerbound, double * upperbound, double step, vo
         .tick_values({-14,-11,-8,-5, -3, 0, 3,6})
         .ticklabels({"0","1e-11", "1e-8", "1e-5", "1e-3", "1","1e3","1e6"});
     matplot::show();
-    
-    do 
+
+    do
     {
         cout << '\n' << "Press a key to continue...";
     } while (cin.get() != '\n');
 }
-

@@ -3,6 +3,7 @@
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_sf.h>
 #include <string>
+#include <random>
 using namespace std;
 struct mass_eff_scalar_density_params
 {
@@ -36,7 +37,7 @@ struct crit_params
     double nucleon_mass;
     double degeneracy;
 };
-//struct for the parameters for finding the interaction terms
+//struct for the parameters for finding the interaction terms for 1 CP
 struct interaction_params
 {
     double nucleon_mass;
@@ -45,6 +46,21 @@ struct interaction_params
     double binding_energy;
     double critical_temperature;
     double critical_density;
+    unsigned int* terms;
+};
+//struct for the parameters for finding the interaction terms for 2 CPs
+struct interaction_params_2crit
+{
+    double nucleon_mass;
+    double degeneracy;
+    double saturation_density;
+    double binding_energy;
+    double critical_temperature_lg;
+    double critical_density_lg;
+    double critical_temperature_qgp;
+    double critical_density_qgp;
+    double spinodial_l_density;
+    double spinodial_r_density;
     unsigned int* terms;
 };
 int mass_eff_scalar_density_root(const gsl_vector * x, void *params, gsl_vector * f);
@@ -61,9 +77,13 @@ pair<double, double> get_crit(double nucleon_mass,double saturation_density, dou
 int interaction_root(const gsl_vector * x, void *params, gsl_vector * f);
 int print_state_interaction (size_t iter, gsl_multiroot_fsolver * s);
 tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, bool print,vector<double> init_exp={2.05,2.05},vector<double> init_coeff={10*4*M_PI/pow(550,2.0),10*4*M_PI/pow(783,2.0)});
+int interaction_root_2crit(const gsl_vector * x, void *params, gsl_vector * f);
+int print_state_interaction_2crit (size_t iter, gsl_multiroot_fsolver * s);
+tuple<double, vector<double>, vector<double>, bool> get_interaction_2crit(void * p, bool print,vector<double> init_exp={2.05,2.05,3,3},vector<double> init_coeff={10*4*M_PI/pow(550,2.0),10*4*M_PI/pow(783,2.0),0,0});
 double energy_pp_minus_mass_solv(double degeneracy, double nucleon_mass,double number_density, vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
 double energy_pp_minus_mass_dn_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
 double press_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
+double press_dn_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp);
 double incsolv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp,double delta=1);
 double T_press_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp, double temperature);
 double  T_press_dmu_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp, double temperature, double delta=1.);
@@ -76,3 +96,7 @@ void gsl_handler (const char * reason, const char * file, int line, int gsl_errn
 bool validate_interaction(double error, vector<double> coeff_guess, vector<double> exp_guess,vector<double> coeff, vector<double> exp, string filename, int timestamp, void* params);
 void interaction_4D_grid(double nucleon_mass,double critical_temperature, double critical_density, double binding_energy, double saturation_density, double degeneracy, double boundaries  [4][3], unsigned int terms [2], string filename, bool print, int num_sol=0);
 void interaction_4D_crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double boundaries_model  [4][3], double boundaries_crit [2][3], unsigned int terms [2], string filename, bool print, int num_sol);
+bool validate_interaction_2crit(double error, vector<double> exp_guess, vector<double> coeff_guess,vector<double> exp, vector<double> coeff, string filename, int timestamp, void* params);
+tuple<tuple<double, vector<double>, vector<double>,bool>, vector<double>, vector<double>> random_test_8D(uniform_real_distribution<double> sampler [8], void * parameters);
+void interaction_8D_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy ,double critical_temperature_lg, double critical_density_lg,double critical_temperature_qgp, double critical_density_qgp, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], unsigned int terms [2],string filename, bool print, int num_sol, unsigned int tests );
+void interaction_2crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], double boundaries_crit [4][3], unsigned int terms [2],string filename, bool print, unsigned int num_sol,unsigned int num_test);

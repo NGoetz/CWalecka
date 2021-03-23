@@ -10,7 +10,7 @@
 
 using namespace std;
 
-//holds the parameters of integrations for finite temperature 
+//holds the parameters of integrations for finite temperature
 struct integration_params
 {
     double temperature;
@@ -49,7 +49,7 @@ double scalar_density_dn(double degeneracy, double mass_eff, double number_densi
         denom3+=-3*scalar_coeff[i]*(scalar_exp[i]-1.0)*pow(scalar_density_val, scalar_exp[i]-2.0)*degeneracy*pow(mass_eff,2.0)*log(1.0 + 2*fmom(degeneracy,number_density)/(E_eff(fmom(degeneracy,number_density),mass_eff)-fmom(degeneracy,number_density)))*E_eff(fmom(degeneracy,number_density), mass_eff);
     }
     double denom4= (8.0*pow(M_PI,2.0))*E_eff(fmom(degeneracy,number_density), mass_eff);
-    
+
     return numerator/(denom1+denom2+denom3+denom4);
 }
 
@@ -61,7 +61,7 @@ double mass_eff_from_scalar_density(double nucleon_mass, vector<double> scalar_c
        // cout<<scalar_coeff[i]<<" "<<scalar_exp[i]<<endl;
     }
     //cout<<"renorm "<<renorm<<endl;
-    
+
     if (renorm>nucleon_mass){
         return 0.0;
     }
@@ -86,30 +86,30 @@ double eps_over_n(double degeneracy, double mass_eff, double number_density,vect
     }
     double vec=0;
     for(int i=0;i<vec_coeff.size(); i++){
-        vec+=((vec_exp[i]-1.0)/vec_exp[i])*vec_coeff[i]*pow(number_density,vec_exp[i]);
+        vec+=(1.0/vec_exp[i])*vec_coeff[i]*pow(number_density,vec_exp[i]);
     }
     eps+=scalar+vec;
     return eps/number_density;
 }
 
-//the derivate of the energy density divided by density at T=0. 
+//the derivate of the energy density divided by density at T=0.
 double eps_over_n_dn(double degeneracy, double mass_eff, double number_density, vector<double> scalar_coeff, vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp, double scalar_density){
-    
+
     double scalar_density_dn_val = scalar_density_dn(degeneracy, mass_eff, number_density,  scalar_coeff, scalar_exp);
     double mass_eff_dn_val = mass_eff_from_scalar_density_dn( mass_eff,  number_density, scalar_coeff,  scalar_exp, degeneracy);
-   
+
     double scalar=0;
     for(int i=0;i<scalar_coeff.size(); i++){
         scalar+= 16.0*((scalar_exp[i]-1.0)/scalar_exp[i])*E_eff(fmom(degeneracy,number_density), mass_eff)*pow(M_PI,2.0)*(scalar_coeff[i])*pow(scalar_density, scalar_exp[i]-1.0)* (-scalar_density + scalar_exp[i]*number_density* scalar_density_dn_val);
     }
     double vec=0;
     for(int i=0;i<vec_coeff.size(); i++){
-        vec+= 16.0*(pow(vec_exp[i]-1,2.0)/vec_exp[i])*pow(number_density,vec_exp[i])*pow(M_PI,2.0)*(vec_coeff[i])* E_eff(fmom(degeneracy,number_density), mass_eff);
+        vec+= 16.0*((vec_exp[i]-1)/vec_exp[i])*pow(number_density,vec_exp[i])*pow(M_PI,2.0)*(vec_coeff[i])* E_eff(fmom(degeneracy,number_density), mass_eff);
     }
-    return ((1.0/(16.0*pow(number_density*M_PI,2.0)*E_eff(fmom(degeneracy,number_density), mass_eff) ))*(-2.0*number_density*pow(M_PI*mass_eff,2.0) - degeneracy*fmom(degeneracy,number_density)*pow(mass_eff,4.0)+ 4.0*number_density*pow(fmom(degeneracy,number_density)*M_PI,2.0) + 
+    return ((1.0/(16.0*pow(number_density*M_PI,2.0)*E_eff(fmom(degeneracy,number_density), mass_eff) ))*(-2.0*number_density*pow(M_PI*mass_eff,2.0) - degeneracy*fmom(degeneracy,number_density)*pow(mass_eff,4.0)+ 4.0*number_density*pow(fmom(degeneracy,number_density)*M_PI,2.0) +
    24.0*pow(number_density*M_PI,2.0)*mass_eff*mass_eff_dn_val + 4*degeneracy*fmom(degeneracy,number_density)*number_density*pow(mass_eff,3.0)*mass_eff_dn_val  - degeneracy*log(mass_eff/(fmom(degeneracy,number_density) + E_eff(fmom(degeneracy,number_density), mass_eff)))*pow(mass_eff,3.0)* E_eff(fmom(degeneracy,number_density), mass_eff)* (mass_eff - 4*number_density*mass_eff_dn_val) +scalar+vec));
 }
-//the pressure at T=0. 
+//the pressure at T=0.
 double press(double degeneracy, double mass_eff, double number_density,vector<double> scalar_coeff, vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp, double scalar_density){
     double press=(((degeneracy/(16.0*pow(M_PI,2)))*((2.0/3.0)*E_eff(fmom(degeneracy,number_density),mass_eff)*(pow(fmom(degeneracy,number_density),3)) - (pow(mass_eff,2))*(E_eff(fmom(degeneracy,number_density),mass_eff)*fmom(degeneracy,number_density) + pow(mass_eff,2)*log(mass_eff/(E_eff(fmom(degeneracy,number_density),mass_eff) + fmom(degeneracy,number_density)))))));
     double scalar=0;
@@ -121,6 +121,21 @@ double press(double degeneracy, double mass_eff, double number_density,vector<do
         vec+=((vec_exp[i]-1.0)/vec_exp[i])*vec_coeff[i]*pow(number_density,vec_exp[i]);
     }
     return press+scalar+vec;
+}
+//its derivative.
+double press_dn(double degeneracy, double mass_eff, double number_density,vector<double> scalar_coeff, vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp, double scalar_density){
+  double scalar_density_dn_val = scalar_density_dn(degeneracy, mass_eff, number_density,  scalar_coeff, scalar_exp);
+  double mass_eff_dn_val = mass_eff_from_scalar_density_dn( mass_eff,  number_density, scalar_coeff,  scalar_exp, degeneracy);
+
+  double scalar=0;
+  for(int i=0;i<scalar_coeff.size(); i++){
+      scalar-= (scalar_exp[i]-1)*scalar_coeff[i]*pow(scalar_density,scalar_exp[i]-1)*scalar_density_dn_val;
+  }
+  double vec=0;
+  for(int i=0;i<vec_coeff.size(); i++){
+      vec+= (vec_exp[i]-1)*vec_coeff[i]*pow(number_density,vec_exp[i]-1);
+  }
+  return vec+scalar+(4*pow(M_PI*fmom(degeneracy,number_density),2.0)-3*degeneracy*pow(mass_eff,3.0)*mass_eff_dn_val*fmom(degeneracy,number_density)+3*mass_eff*mass_eff_dn_val*(-2*number_density*pow(M_PI,2.0)+degeneracy*pow(mass_eff,2.0)*E_eff(fmom(degeneracy,number_density),mass_eff)*log((E_eff(fmom(degeneracy,number_density), mass_eff) + fmom(degeneracy,number_density))/mass_eff)))/(12*pow(M_PI,2.0)*E_eff(fmom(degeneracy,number_density), mass_eff));
 }
 //Finite temperature properties
 //fermi distribution with -mu
@@ -176,7 +191,6 @@ double T_pressure(double degeneracy, double temperature, double mass_eff, double
     struct integration_params param ={temperature,mass_eff,mu_eff,degeneracy};
     gsl_integration_workspace * w= gsl_integration_workspace_alloc (700);
     double result, error;
-
     gsl_function F;
     F.function = &T_pressure_integrand;
     F.params = &param;
@@ -198,6 +212,7 @@ double T_scalar_density(double degeneracy, double temperature, double mass_eff, 
     struct integration_params param ={temperature,mass_eff,mu_eff,degeneracy};
     gsl_integration_workspace * w= gsl_integration_workspace_alloc (700);
     double result, error;
+    //cout<<"before_scalar"<<endl;
     //cout<<"Tscalardenstiy mass eff "<<mass_eff<<" mueff"<<mu_eff<<" temperature"<<temperature<<"\n";
     gsl_function F;
     F.function = &T_scalar_density_integrand;
@@ -205,11 +220,12 @@ double T_scalar_density(double degeneracy, double temperature, double mass_eff, 
     gsl_integration_qagiu (&F, 0, 0, 1e-10, 700,
                     w, &result, &error);
     gsl_integration_workspace_free (w);
+    //cout<<"endscalar"<<endl;
     return result;
 }
 //the number density at finite T
 double T_number_density(double degeneracy, double temperature, double mass_eff, double mu_eff){
-     struct integration_params param ={temperature,mass_eff,mu_eff,degeneracy};
+    struct integration_params param ={temperature,mass_eff,mu_eff,degeneracy};
     gsl_integration_workspace * w= gsl_integration_workspace_alloc (700);
     double result, error;
 
