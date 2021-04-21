@@ -199,21 +199,17 @@ void T_press_plot(double start, double step, double nmax, void * params, int num
         auto w = arange<double>(start, nmax, step);
 
         for (int i=0; i<t.size(); i=i+1){
-            //cout<<t[i]<<endl;
-            //cout<<" "<<vec_coeff[0]<<" "<<vec_exp[0]<<endl;
-            s[i]=T_press_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
-           // v[i]=1e6*T_press_dn_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
-            //w[i]=1e11*T_press_dn2_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+
+            s[i]=T_press_solv(degeneracy, nucleon_mass, t[i]*saturation_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+            v[i]=1e6*T_press_dn_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
+            w[i]=1e11*T_press_dn2_solv(degeneracy, nucleon_mass, t[i]*saturation_density, scalar_coeff, scalar_exp, vec_coeff, vec_exp, temperature)/pow((conv),3);
 
         }
 
-       //matplot::ylim(matplot::manual);
-        //matplot::ylim({0.4,1});
-
         matplot::hold(matplot::on);
         matplot::plot(ax,t,s)->line_width(2);
-        //matplot::plot(ax,t,v)->line_width(3);
-        //matplot::plot(ax,t,w)->line_width(3);
+        matplot::plot(ax,t,v)->line_width(3);
+        matplot::plot(ax,t,w)->line_width(3);
         matplot::title("Critical pressure for all 2 term models");
         auto l=matplot::legend(ax, {"V1S1", "V2S0", "V0S2"});
         l->location(matplot::legend::general_alignment::topleft);

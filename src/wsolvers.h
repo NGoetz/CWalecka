@@ -4,6 +4,8 @@
 #include <gsl/gsl_sf.h>
 #include <string>
 #include <random>
+#include <array>
+
 using namespace std;
 struct mass_eff_scalar_density_params
 {
@@ -96,7 +98,4 @@ void gsl_handler (const char * reason, const char * file, int line, int gsl_errn
 bool validate_interaction(double error, vector<double> coeff_guess, vector<double> exp_guess,vector<double> coeff, vector<double> exp, string filename, int timestamp, void* params);
 void interaction_4D_grid(double nucleon_mass,double critical_temperature, double critical_density, double binding_energy, double saturation_density, double degeneracy, double boundaries  [4][3], unsigned int terms [2], string filename, bool print, int num_sol=0);
 void interaction_4D_crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double boundaries_model  [4][3], double boundaries_crit [2][3], unsigned int terms [2], string filename, bool print, int num_sol);
-bool validate_interaction_2crit(double error, vector<double> exp_guess, vector<double> coeff_guess,vector<double> exp, vector<double> coeff, string filename, int timestamp, void* params);
-tuple<tuple<double, vector<double>, vector<double>,bool>, vector<double>, vector<double>> random_test_8D(uniform_real_distribution<double> sampler [8], void * parameters);
-void interaction_8D_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy ,double critical_temperature_lg, double critical_density_lg,double critical_temperature_qgp, double critical_density_qgp, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], unsigned int terms [2],string filename, bool print, int num_sol, unsigned int tests );
-void interaction_2crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], double boundaries_crit [4][3], unsigned int terms [2],string filename, bool print, unsigned int num_sol,unsigned int num_test);
+double round_to_n_digits(double x, int n);

@@ -16,8 +16,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string.h>
 #include <omp.h>
 #include <random>
+
+//basic integrators and root solvers as well as functionalities
+//to find a generalised Walecka model
+
 
 double round_to_n_digits(double x, int n)
 {
@@ -55,7 +60,7 @@ int print_state_mass_eff_scalar_density (size_t iter, gsl_multiroot_fsolver * s)
 // as a parameter!
 pair<double, double> get_mass_eff_scalar_density(double degeneracy, double nucleon_mass,vector<double> scalar_coeff ,vector<double> scalar_exp,double number_density,bool print) {
 
-  struct mass_eff_scalar_density_params p ={scalar_coeff,scalar_exp,number_density,nucleon_mass, degeneracy,{0},{0}};
+  struct mass_eff_scalar_density_params p={scalar_coeff,scalar_exp,number_density,nucleon_mass, degeneracy,0.,{0.0},{0.0}};
 
   int status;
   size_t iter = 0;
@@ -119,12 +124,7 @@ int T_mass_eff_mu_eff_scalar_density_root(const gsl_vector * x, void *params, gs
   double degeneracy=(( struct mass_eff_scalar_density_params *) params )->degeneracy;
   const double x0 = abs(gsl_vector_get (x, 0));
   const double x1 = abs(gsl_vector_get (x, 1));//prediction of effective baryochemical potential
-  //cout<<"1"<<endl;
-  //cout<<x0<<" "<<x1<<endl;
   const double y0 =x0-mass_eff_from_scalar_density(nucleon_mass,scalar_coeff,scalar_exp,T_scalar_density(degeneracy,temperature,x0,x1));
-  //cout<<"2"<<endl;
-  //cout<<scalar_exp.size()<<" "<<degeneracy<<" "<<temperature<<" "<<x0<<" "<<x1<<endl;
-  //cout<<T_number_density(degeneracy,temperature,x0,x1)<<endl;
   const double y1 =number_density-T_number_density(degeneracy,temperature,x0,x1);
   gsl_vector_set (f, 0, y0);
   gsl_vector_set (f, 1, y1);
@@ -190,7 +190,7 @@ tuple<double, double,double,bool> get_T_mass_eff_mu_eff_scalar_density(vector<do
   gsl_multiroot_fsolver_free (s);
   gsl_vector_free (x);
   tuple<double, double,double,bool> result={mass_eff,mu_eff,scalar_density,status==GSL_SUCCESS};
-  //cout<<"finished "<<"\n";
+
   return result;
 }
 
@@ -311,12 +311,8 @@ int crit_root(const gsl_vector * x, void *params, gsl_vector * f){
   const double x1=abs(gsl_vector_get(x,1));//temperature - both need to be positive
 
   // find the inflection point
-  //cout<<"1"<<endl;
-  //cout<<x0<<" "<<x1<<endl;
   const double y0 =T_press_dn_solv(degeneracy, nucleon_mass, x0, scalar_coeff, scalar_exp, vec_coeff, vec_exp, x1);
-  //cout<<"2"<<endl;
   const double y1 =T_press_dn2_solv(degeneracy, nucleon_mass, x0,scalar_coeff, scalar_exp, vec_coeff, vec_exp, x1);
-  //cout<<"3"<<endl;
   gsl_vector_set (f, 0, y0);
   gsl_vector_set (f, 1, y1);
   return GSL_SUCCESS;
@@ -333,7 +329,6 @@ pair<double, double> get_crit(double nucleon_mass,double saturation_density, dou
     p ={scalar_coeff, scalar_exp, vec_coeff, vec_exp, nucleon_mass, degeneracy};
   }
 
-  //cout<<((struct crit_params *) &p)->scalar_coeff[0]<<" "<<((struct crit_params *) &p)->vec_coeff[0]<<endl;
   int status;
   size_t iter = 0;
 
@@ -369,7 +364,7 @@ pair<double, double> get_crit(double nucleon_mass,double saturation_density, dou
     status =
     gsl_multiroot_test_residual (s->f, 1e-13);
   }
-  while (status == GSL_CONTINUE && iter < 1000);
+  while (status == GSL_CONTINUE && iter < 2000);
   if (print){
     printf ("status = %s\n", gsl_strerror (status));
   }
@@ -380,7 +375,7 @@ pair<double, double> get_crit(double nucleon_mass,double saturation_density, dou
   pair<double, double> result={temperature_crit,number_density_crit};
   return result;
 }
-//currently only for 2 terms
+//for 2 terms
 int interaction_root(const gsl_vector * x, void *params, gsl_vector * f){
   double nucleon_mass=((struct interaction_params *) params)->nucleon_mass;
   double degeneracy=((struct interaction_params *) params)->degeneracy;
@@ -481,130 +476,6 @@ tuple<double, double,double,double, double, bool> get_interaction_4D(void * p, b
   return result;
 }
 
-int interaction_root_2crit(const gsl_vector * x, void *params, gsl_vector * f){
-  double nucleon_mass=((struct interaction_params_2crit *) params)->nucleon_mass;
-  double degeneracy=((struct interaction_params_2crit *) params)->degeneracy;
-  double saturation_density=((struct interaction_params_2crit *) params)->saturation_density;
-  double binding_energy=((struct interaction_params_2crit *) params)->binding_energy;
-  double critical_temperature_lg=((struct interaction_params_2crit *) params)->critical_temperature_lg;
-  double critical_density_lg=((struct interaction_params_2crit *) params)->critical_density_lg;
-  double critical_temperature_qgp=((struct interaction_params_2crit *) params)->critical_temperature_qgp;
-  double critical_density_qgp=((struct interaction_params_2crit *) params)->critical_density_qgp;
-  double spinodial_r_density=((struct interaction_params_2crit *) params)->spinodial_r_density;
-  double spinodial_l_density=((struct interaction_params_2crit *) params)->spinodial_l_density;
-  unsigned int * terms =((struct interaction_params_2crit *) params)->terms;
-
-  vector<double> scalar_coeff, scalar_exp, vector_coeff, vector_exp;
-
-  for(unsigned int i=0; i<terms[0];i++){
-    scalar_exp.push_back(gsl_vector_get(x,i));
-    scalar_coeff.push_back(gsl_vector_get(x,terms[0]+terms[1]+i));
-  }
-  for(unsigned int i=terms[0]; i<terms[0]+terms[1];i++){
-    vector_exp.push_back(gsl_vector_get(x,i));
-    vector_coeff.push_back(gsl_vector_get(x,terms[0]+terms[1]+i));
-  }
-
-  pair<double, double> output=get_mass_eff_scalar_density(degeneracy, nucleon_mass,scalar_coeff, scalar_exp, saturation_density, false);
-  //predict binding at demanded saturation density
-  const double y0 =binding_energy-nucleon_mass+eps_over_n(degeneracy, output.first, saturation_density, scalar_coeff, scalar_exp,vector_coeff, vector_exp, output.second);
-  const double y1 =eps_over_n_dn(degeneracy, output.first, saturation_density,scalar_coeff, scalar_exp,vector_coeff, vector_exp, output.second);
-  //there is an inflection point at the critical temperature/density
-  pair<double, double> pressures_lg=T_press_dn12_solv( degeneracy,  nucleon_mass, critical_density_lg,  scalar_coeff, scalar_exp,vector_coeff, vector_exp, critical_temperature_lg);
-  const double y2 =pressures_lg.first;
-  const double y3 =pressures_lg.second;
-  pair<double, double> pressures_qgp=T_press_dn12_solv( degeneracy,  nucleon_mass, critical_density_qgp,  scalar_coeff, scalar_exp,vector_coeff, vector_exp, critical_temperature_qgp);
-  const double y4 =pressures_qgp.first;
-  const double y5 =pressures_qgp.second;
-  const double y6=press_dn_solv( degeneracy, nucleon_mass,spinodial_l_density, scalar_coeff, scalar_exp, vector_coeff,vector_exp);
-  const double y7=press_dn_solv( degeneracy, nucleon_mass,spinodial_r_density, scalar_coeff, scalar_exp, vector_coeff,vector_exp); //NOT THE PRESSURE IS ZERO; ITS DERIVATIVE
-  gsl_vector_set (f, 0, y0);
-  gsl_vector_set (f, 1, y1);
-  gsl_vector_set (f, 2, y2);
-  gsl_vector_set (f, 3, y3);
-  gsl_vector_set (f, 4, y4);
-  gsl_vector_set (f, 5, y5);
-  gsl_vector_set (f, 6, y6);
-  gsl_vector_set (f, 7, y7);
-  return GSL_SUCCESS;
-}
-
-int print_state_interaction_2crit (size_t iter, gsl_multiroot_fsolver * s){
-  printf ("iter = %3lu x = % .3f % .3f % .3f % .3f % .3f % .3f % .3f % .3f "
-  "f(x) = % .3e % .3e % .3e % .3e  % .3e % .3e % .3e % .3e\n",
-  iter,
-  gsl_vector_get (s->x, 0),
-  gsl_vector_get (s->x, 1),
-  gsl_vector_get (s->x, 2),
-  gsl_vector_get (s->x, 3),
-  gsl_vector_get (s->x, 4),
-  gsl_vector_get (s->x, 5),
-  gsl_vector_get (s->x, 6),
-  gsl_vector_get (s->x, 7),
-  gsl_vector_get (s->f, 0),
-  gsl_vector_get (s->f, 1),
-  gsl_vector_get (s->f, 2),
-  gsl_vector_get (s->f, 3),
-  gsl_vector_get (s->f, 4),
-  gsl_vector_get (s->f, 5),
-  gsl_vector_get (s->f, 6),
-  gsl_vector_get (s->f, 7));
-  return 0;
-}
-//find the coefficients and exponents of 4 terms with the nuclear saturation point and the nuclear liquid/gas transition
-tuple<double, vector<double>, vector<double>, bool> get_interaction_2crit(void * p, bool print, vector<double> init_exp,  vector<double> init_coeff) {
-  gsl_set_error_handler(&gsl_handler);
-  int status;
-  size_t iter = 0;
-  const size_t num = 8;
-  gsl_vector *x = gsl_vector_alloc (num);
-  const gsl_multiroot_fsolver_type * K = gsl_multiroot_fsolver_hybrids;
-  gsl_multiroot_fsolver * s = gsl_multiroot_fsolver_alloc (K, num);
-
-  gsl_multiroot_function f = {&interaction_root_2crit, num, p};
-  unsigned int * terms=((struct interaction_params_2crit *) p)->terms;
-  assert(terms[0]+terms[1]==4);
-
-
-  gsl_vector_set (x, 0, init_exp[0]);
-  gsl_vector_set (x, 1, init_exp[1]);
-  gsl_vector_set (x, 2, init_exp[2]);
-  gsl_vector_set (x, 3, init_exp[3]);
-  gsl_vector_set (x, 4, init_coeff[0]);
-  gsl_vector_set (x, 5, init_coeff[1]);
-  gsl_vector_set (x, 6, init_coeff[2]);
-  gsl_vector_set (x, 7, init_coeff[3]);
-
-  gsl_multiroot_fsolver_set (s, &f, x);
-
-  if (print) {
-    print_state_interaction_2crit (iter, s);
-  }
-  // perform the root solving
-  do{
-    iter++;
-    status = gsl_multiroot_fsolver_iterate (s);
-    if (print) {
-      print_state_interaction_2crit (iter, s);
-    }
-
-    if (status)
-    break;
-
-    status =
-    gsl_multiroot_test_residual (s->f, 1e-11);
-
-  }while (status == GSL_CONTINUE && iter < 1000);
-  if (print){
-    printf ("status = %s\n", gsl_strerror (status));
-
-  }
-  double error=abs(gsl_vector_get(s->f,0))+abs(gsl_vector_get(s->f,1))+abs(gsl_vector_get(s->f,2))+abs(gsl_vector_get(s->f,3))+abs(gsl_vector_get(s->f,4))+abs(gsl_vector_get(s->f,5))+abs(gsl_vector_get(s->f,6))+abs(gsl_vector_get(s->f,7));
-  tuple<double, vector<double>, vector<double>, bool> result={error,{gsl_vector_get(s->x,0),gsl_vector_get(s->x,1),gsl_vector_get(s->x,2),gsl_vector_get(s->x,3)},{gsl_vector_get(s->x,4),gsl_vector_get(s->x,5),gsl_vector_get(s->x,6),gsl_vector_get(s->x,7)},status==GSL_SUCCESS};
-  gsl_multiroot_fsolver_free (s);
-  gsl_vector_free (x);
-  return result;
-}
 // solve the energy density at T=0 with given coupling constants
 double energy_pp_minus_mass_solv(double degeneracy, double nucleon_mass,double number_density,vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp){
   pair<double, double> x=get_mass_eff_scalar_density(degeneracy, nucleon_mass, scalar_coeff, scalar_exp, number_density, false);
@@ -616,7 +487,7 @@ double energy_pp_minus_mass_dn_solv(double degeneracy, double nucleon_mass,doubl
   pair<double, double> x=get_mass_eff_scalar_density(degeneracy, nucleon_mass, scalar_coeff, scalar_exp, number_density, false);
   return eps_over_n_dn(degeneracy, x.first,number_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp, x.second);
 }
-//same for pressure as T=0
+//same for pressure at T=0
 double press_solv(double degeneracy, double nucleon_mass,double number_density, vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp){
   pair<double, double> x=get_mass_eff_scalar_density(degeneracy, nucleon_mass, scalar_coeff, scalar_exp, number_density, false);
   return press(degeneracy, x.first,number_density,scalar_coeff, scalar_exp, vec_coeff, vec_exp,x.second);
@@ -635,6 +506,7 @@ double incsolv(double degeneracy, double nucleon_mass,double number_density, vec
 //pressure at finite T
 double T_press_solv(double degeneracy, double nucleon_mass,double number_density, vector<double> scalar_coeff,vector<double> scalar_exp, vector<double> vec_coeff, vector<double> vec_exp, double temperature){
   tuple<double, double,double,bool>x= get_T_mass_eff_mu_eff_scalar_density(scalar_coeff, scalar_exp, vec_coeff, vec_exp,nucleon_mass,number_density, temperature, degeneracy,   false);
+
   return T_pressure(degeneracy, temperature,get<0>(x),get<1>(x),scalar_coeff, scalar_exp, vec_coeff, vec_exp,get<2>(x), number_density);
 }
 //derivative of pressure at finite T after mu
@@ -692,7 +564,7 @@ void gsl_handler (const char * reason, const char * file,  int line,int gsl_errn
     throw 42;
 }
 
-//validate interaction terms found
+//validate interaction terms for 2 term model
 bool validate_interaction(double error, vector<double> coeff_guess, vector<double> exp_guess,vector<double> coeff, vector<double> exp, string filename, int timestamp, void* params){
   double eps=numeric_limits<double>::epsilon();
   double nucleon_mass=((struct interaction_params *) params)->nucleon_mass;
@@ -879,6 +751,7 @@ void interaction_4D_grid(double nucleon_mass,double critical_temperature, double
 
   return;
 }
+
 //find interactions for a grid of critical points
 void interaction_4D_crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double boundaries_model  [4][3], double boundaries_crit [2][3], unsigned int terms [2],string filename, bool print, int num_sol){
   FILE * pFile;
@@ -913,282 +786,8 @@ void interaction_4D_crit_grid(double nucleon_mass, double binding_energy, double
   fclose(pFile);
   for(double crit_T=boundaries_crit[0][0]; crit_T<=boundaries_crit[0][1];crit_T+=boundaries_crit[0][2] ){
     for(double crit_n=boundaries_crit[1][0]; crit_n<=boundaries_crit[1][1];crit_n+=boundaries_crit[1][2] ){
-      //cout<<crit_T<<" "<<crit_n<<endl;
       interaction_4D_grid( nucleon_mass, crit_T,  crit_n,  binding_energy,  saturation_density,  degeneracy,boundaries_model, terms, filename, false,num_sol);
     }
   }
   return;
 }
-
-//validate interaction terms found
-bool validate_interaction_2crit(double error, vector<double> exp_guess, vector<double> coeff_guess,vector<double> exp, vector<double> coeff, string filename, int timestamp, void* params){
-  double eps=numeric_limits<double>::epsilon();
-  double nucleon_mass=((struct interaction_params_2crit *) params)->nucleon_mass;
-  double degeneracy=((struct interaction_params_2crit *) params)->degeneracy;
-  double saturation_density=((struct interaction_params_2crit *) params)->saturation_density;
-  double binding_energy=((struct interaction_params_2crit *) params)->binding_energy;
-  double critical_temperature_lg=((struct interaction_params_2crit *) params)->critical_temperature_lg;
-  double critical_density_lg=((struct interaction_params_2crit *) params)->critical_density_lg;
-  double critical_temperature_qgp=((struct interaction_params_2crit *) params)->critical_temperature_qgp;
-  double critical_density_qgp=((struct interaction_params_2crit *) params)->critical_density_qgp;
-  double spinodial_l_density=((struct interaction_params_2crit *) params)->spinodial_l_density;
-  double spinodial_r_density=((struct interaction_params_2crit *) params)->spinodial_r_density;
-  unsigned int * terms =((struct interaction_params_2crit *) params)->terms;
-
-  vector<double> scalar_coeff, scalar_exp, vec_coeff, vec_exp,scalar_coeff_guess, scalar_exp_guess, vec_coeff_guess, vec_exp_guess;
-
-
-  for(unsigned int i=0; i<terms[0]; i++){
-    scalar_coeff.push_back(coeff[i]);
-    scalar_exp.push_back(exp[i]);
-    scalar_coeff_guess.push_back(coeff_guess[i]);
-    scalar_exp_guess.push_back(exp_guess[i]);
-  }
-  for(unsigned int i=terms[0]; i<terms[0]+terms[1]; i++){
-    vec_coeff.push_back(coeff[i]);
-    vec_exp.push_back(exp[i]);
-    vec_coeff_guess.push_back(coeff_guess[i]);
-    vec_exp_guess.push_back(exp_guess[i]);
-  }
-
-  pair<double, double> mstarns=get_mass_eff_scalar_density( degeneracy,  nucleon_mass, scalar_coeff,  scalar_exp,  saturation_density, false);
-  double new_binding_energy=nucleon_mass-eps_over_n(degeneracy, mstarns.first, saturation_density, scalar_coeff,  scalar_exp, vec_coeff, vec_exp, mstarns.second);
-  double binding_energy_minimum =eps_over_n_dn(degeneracy, mstarns.first, saturation_density, scalar_coeff,  scalar_exp, vec_coeff, vec_exp, mstarns.second);
-  double incompress=incsolv( degeneracy,  nucleon_mass,saturation_density, scalar_coeff,  scalar_exp, vec_coeff, vec_exp);
-  pair<double, double> CP_lg= get_crit( nucleon_mass, saturation_density,  binding_energy,  degeneracy,  scalar_exp,  vec_exp, false, 19,0.44*saturation_density,scalar_coeff,vec_coeff);
-  double CP_lg_P=T_press_solv(degeneracy, nucleon_mass,CP_lg.second,  scalar_coeff, scalar_exp, vec_coeff, vec_exp, CP_lg.first)/pow(197.3,3);
-  if(abs(round_to_n_digits(CP_lg.first,3)-round_to_n_digits(critical_temperature_lg,3))>eps||abs(round_to_n_digits( CP_lg.second/saturation_density,2)-round_to_n_digits( critical_density_lg/saturation_density,2))>eps){
-    return false;
-  }
-
-  pair<double, double> CP_qgp= get_crit( nucleon_mass, saturation_density,  binding_energy,  degeneracy,  scalar_exp,  vec_exp, false, 50,3*saturation_density,scalar_coeff,vec_coeff);
-  double CP_qgp_P=T_press_solv(degeneracy, nucleon_mass,CP_qgp.second,  scalar_coeff, scalar_exp, vec_coeff, vec_exp, CP_qgp.first)/pow(197.3,3);
-  if(abs(round_to_n_digits(CP_qgp.first,3)-round_to_n_digits(critical_temperature_qgp,3))>eps||abs(round_to_n_digits( CP_qgp.second/saturation_density,2)-round_to_n_digits( critical_density_qgp/saturation_density,2))>eps){
-    return false;
-  }
-
-  FILE * pFile;
-  pFile = fopen ((filename+".csv").c_str(),"a");
-  fprintf(pFile,"%d, ",timestamp);
-  for(unsigned int i=0; i<scalar_coeff_guess.size();i++){
-    fprintf(pFile, "%.16e, ",scalar_coeff_guess[i]);
-  }
-  for(unsigned int i=0; i<scalar_exp_guess.size();i++){
-    fprintf(pFile, "%.16f, ",scalar_exp_guess[i]);
-  }
-  for(unsigned int i=0; i<vec_coeff_guess.size();i++){
-    fprintf(pFile, "%.16e, ",vec_coeff_guess[i]);
-  }
-  for(unsigned int i=0; i<vec_exp_guess.size();i++){
-    fprintf(pFile, "%.16f, ",vec_exp_guess[i]);
-  }
-  for(unsigned int i=0; i<scalar_coeff.size();i++){
-    fprintf(pFile, "%.16e, ",scalar_coeff[i]);
-  }
-  for(unsigned int i=0; i<scalar_exp.size();i++){
-    fprintf(pFile, "%.16f, ",scalar_exp[i]);
-  }
-  for(unsigned int i=0; i<vec_coeff.size();i++){
-    fprintf(pFile, "%.16e, ",vec_coeff[i]);
-  }
-  for(unsigned int i=0; i<vec_exp.size();i++){
-    fprintf(pFile, "%.16f, ",vec_exp[i]);
-  }
-  fprintf(pFile, "%.5e, %.16f, %.16f, %.16f, %.16f, %.16f, %.16f, %.16f, %.16f, %.16f, %.16f,%.16f, %.16f ; \n ", error, mstarns.first, new_binding_energy, binding_energy_minimum, incompress, CP_lg.first, CP_lg.second/saturation_density, CP_lg_P, CP_qgp.first, CP_qgp.second/saturation_density, CP_qgp_P,spinodial_l_density, spinodial_r_density);
-
-  fclose(pFile);
-  return true;
-
-}
-
-template <typename T> int sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
-//Turn this into a distribution array argument to do it only once
-tuple<tuple<double, vector<double>, vector<double>,bool>, vector<double>, vector<double>> random_test_8D(uniform_real_distribution<double> sampler [12], void * parameters){
-  random_device re;
-  double exp1_guess=sampler[0](re);
-  double exp2_guess=sampler[1](re);
-  double exp3_guess=sampler[2](re);
-  double exp4_guess=sampler[3](re);
-  double coeff1_guess=sampler[4](re);
-  double coeff2_guess=sampler[5](re);
-  double coeff3_guess=sampler[6](re);
-  double coeff4_guess=sampler[7](re);
-
-  coeff1_guess=sgn(sampler[8](re))*pow(10,coeff1_guess);
-  coeff2_guess=sgn(sampler[9](re))*pow(10,coeff2_guess);
-  coeff3_guess=sgn(sampler[10](re))*pow(10,coeff3_guess);
-  coeff4_guess=sgn(sampler[11](re))*pow(10,coeff4_guess);
-
-
-  tuple<tuple<double, vector<double>,vector<double>,bool>, vector<double>, vector<double>> returner={get_interaction_2crit(parameters, false,{exp1_guess, exp2_guess,exp3_guess,exp4_guess}, {coeff1_guess, coeff2_guess,coeff3_guess, coeff4_guess}),{exp1_guess,exp2_guess,exp3_guess,exp4_guess},{coeff1_guess,coeff2_guess,coeff3_guess,coeff4_guess}};
-
-
-  return returner;
-}
-
-  //find interactions on a grid of initial values
-void interaction_8D_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy ,double critical_temperature_lg, double critical_density_lg,double critical_temperature_qgp, double critical_density_qgp, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], unsigned int terms [2],string filename, bool print, int num_sol, unsigned int num_test ){
-  gsl_set_error_handler(&gsl_handler);
-  double eps=numeric_limits<double>::epsilon();
-  int timestamp=time(0);
-  if(print){
-    FILE * pFile;
-    pFile = fopen ((filename+".csv").c_str(),"w");
-    fprintf(pFile,"timestamp, ");
-    for(unsigned int i=0; i<terms[0];i++){
-      fprintf(pFile, "scalar_coeff_guess[%d], ",i);
-    }
-    for(unsigned int i=0; i<terms[0];i++){
-      fprintf(pFile, "scalar_exp_guess[%d], ",i);
-    }
-    for(unsigned int i=0; i<terms[1];i++){
-      fprintf(pFile, "vector_coeff_guess[%d], ", i);
-    }
-    for(unsigned int i=0; i<terms[1];i++){
-      fprintf(pFile, "vector_exp_guess[%d], ",i);
-    }
-    for(unsigned int i=0; i<terms[0];i++){
-      fprintf(pFile, "scalar_coeff[%d], ",i);
-    }
-    for(unsigned int i=0; i<terms[0];i++){
-      fprintf(pFile, "scalar_exp[%d], ",i);
-    }
-    for(unsigned int i=0; i<terms[1];i++){
-      fprintf(pFile, "vector_coeff[%d], ", i);
-    }
-    for(unsigned int i=0; i<terms[1];i++){
-      fprintf(pFile, "vector_exp[%d], ",i);
-    }
-
-    fprintf(pFile,"GSL_error, mstar, binding_energy, binding_energy_minimum, incompress, CP_LG_T, CP_LG_n, CP_LG_P, CP_QGP_T, CP_QGP_n, CP_QGP_P, SPIN_L_n, SPIN_R_n; \n");
-    fclose(pFile);
-  }
-  if(num_sol!=0&&!getenv("OMP_CANCELLATION")){
-    cout<<"Please do OMP_CANCELLATION=true export OMP_CANCELLATION"<<endl;
-    return;
-  }
-
-  struct interaction_params_2crit p={nucleon_mass, degeneracy, saturation_density,binding_energy, critical_temperature_lg, critical_density_lg,critical_temperature_qgp, critical_density_qgp,spinodial_l_density,spinodial_r_density,  terms };
-
-  unsigned int count_sol=0;
-  unsigned int count_tests=0;
-  vector<vector<double>> solution_storage;
-  int num_threads=ceil(omp_get_max_threads()-3);
-  default_random_engine re;
-  uniform_real_distribution<double>  sampler [12];
-  for(int i=0; i<4;i++){
-    sampler[i]=uniform_real_distribution<double>(boundaries_model[i][0],boundaries_model[i][1]);
-  }
-  for(int i=4; i<8;i++){
-    sampler[i]=uniform_real_distribution<double>(- 40,log10(abs(boundaries_model[i][0])));
-  }
-  for(int i=8; i<12;i++){
-    sampler[i]=uniform_real_distribution<double>(-1,1);
-  }
-
-  while(count_tests<=num_test){
-    #pragma omp parallel num_threads(num_threads) shared(p, solution_storage, num_sol, count_sol, count_tests)
-    {
-      #pragma omp for
-      for(int i=0; i<=num_threads; i+=1 ){
-        count_tests=count_tests+1;
-        #pragma omp cancellation point for
-        try{
-          tuple<tuple<double,vector<double>,vector<double>,bool>, vector<double>, vector<double>>  test= random_test_8D(sampler,&p);
-          tuple<double,vector<double>,vector<double>,bool> result=get<0>(test);
-          if(get<0>(result)<2e-5&&(count_sol<num_sol||num_sol<=0)){
-            double exp1_cut=round_to_n_digits((get<1>(result)[0]),3);
-            double exp2_cut=round_to_n_digits((get<1>(result))[1],3);
-            double exp3_cut=round_to_n_digits((get<1>(result))[2],3);
-            double exp4_cut=round_to_n_digits((get<1>(result))[3],3);
-            double coeff1_cut=round_to_n_digits((get<2>(result))[0],3);
-            double coeff2_cut=round_to_n_digits((get<2>(result))[1],3);
-            double coeff3_cut=round_to_n_digits((get<2>(result))[2],3);
-            double coeff4_cut=round_to_n_digits((get<2>(result))[3],3);
-
-            bool found=false;
-            # pragma omp critical
-            {
-              for(unsigned int j=0; j<solution_storage.size(); j++){
-                if(abs(solution_storage[j][0]-exp1_cut)<eps &&abs(solution_storage[j][1]-exp2_cut)<eps&&abs(solution_storage[j][2]-exp3_cut)<eps&&abs(solution_storage[j][3]-exp4_cut)<eps&&abs(solution_storage[j][4]-coeff1_cut)<eps &&abs(solution_storage[j][5]-coeff2_cut)<eps&&abs(solution_storage[j][6]-coeff3_cut)<eps&&abs(solution_storage[j][7]-coeff4_cut)<eps){
-                  found=true;
-                  break;
-                }else{
-
-                }
-              }
-            }
-            if(!found||num_sol<=0){
-              bool validated=validate_interaction_2crit(get<0>(result), get<1>(test),get<2>(test), get<1>(result), get<2>(result), filename, timestamp, &p);
-              if(!validated){
-                continue;
-              }
-
-              solution_storage.push_back({exp1_cut, exp2_cut,exp3_cut, exp4_cut,coeff1_cut, coeff2_cut,coeff3_cut, coeff4_cut});
-              count_sol+=1;
-
-              if(count_sol>=num_sol&&num_sol>0){
-                #pragma omp cancel for
-              }
-
-            }
-          }else{
-            continue;
-          }
-        }catch(int exception){
-          continue;
-        }
-      }
-    }
-  }
-
-  return;
-}
-
-  //find interactions for a grid of critical points
-void interaction_2crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], double boundaries_crit [4][3], unsigned int terms [2],string filename, bool print, unsigned int num_sol,unsigned int num_test){
-  assert(terms[0]+terms[1]==4);
-  FILE * pFile;
-  pFile = fopen ((filename+".csv").c_str(),"w");
-  fprintf(pFile,"timestamp, ");
-  for(unsigned int i=0; i<terms[0];i++){
-    fprintf(pFile, "scalar_coeff_guess[%d], ",i);
-  }
-  for(unsigned int i=0; i<terms[0];i++){
-    fprintf(pFile, "scalar_exp_guess[%d], ",i);
-  }
-  for(unsigned int i=0; i<terms[1];i++){
-    fprintf(pFile, "vector_coeff_guess[%d], ", i);
-  }
-  for(unsigned int i=0; i<terms[1];i++){
-    fprintf(pFile, "vector_exp_guess[%d], ",i);
-  }
-  for(unsigned int i=0; i<terms[0];i++){
-    fprintf(pFile, "scalar_coeff[%d], ",i);
-  }
-  for(unsigned int i=0; i<terms[0];i++){
-    fprintf(pFile, "scalar_exp[%d], ",i);
-  }
-  for(unsigned int i=0; i<terms[1];i++){
-    fprintf(pFile, "vector_coeff[%d], ", i);
-  }
-  for(unsigned int i=0; i<terms[1];i++){
-    fprintf(pFile, "vector_exp[%d], ",i);
-  }
-
-  fprintf(pFile,"GSL_error, mstar, binding_energy, binding_energy_minimum, incompress, CP_LG_T, CP_LG_n, CP_LG_P, CP_QGP_T, CP_QGP_n, CP_QGP_P, SPIN_L_n, SPIN_R_n; \n");
-  fclose(pFile);
-  for(double crit_lg_T=boundaries_crit[0][0]; crit_lg_T<=boundaries_crit[0][1];crit_lg_T+=boundaries_crit[0][2] ){
-    for(double crit_lg_n=boundaries_crit[1][0]; crit_lg_n<=boundaries_crit[1][1];crit_lg_n+=boundaries_crit[1][2] ){
-      for(double crit_qgp_T=boundaries_crit[2][0]; crit_qgp_T<=boundaries_crit[2][1];crit_qgp_T+=boundaries_crit[2][2] ){
-        for(double crit_qgp_n=boundaries_crit[3][0]; crit_qgp_n<=boundaries_crit[3][1];crit_qgp_n+=boundaries_crit[3][2] ){
-          interaction_8D_grid(nucleon_mass, binding_energy, saturation_density, degeneracy ,crit_lg_T,crit_lg_n,crit_qgp_T,crit_qgp_n, spinodial_l_density, spinodial_r_density,  boundaries_model,terms ,filename, false, num_sol, num_test);
-        }
-      }
-    }
-  }
-  return;
-}
-//spindoial in output!

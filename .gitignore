@@ -41,3 +41,6 @@
 # Build folder
 build/
 build/**
+
+#Slurm
+slurm.sh
