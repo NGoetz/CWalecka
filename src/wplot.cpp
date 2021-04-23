@@ -107,7 +107,7 @@ void press_plot(double start, double step, double nmax, void * params){
     matplot::hold(matplot::on);
     auto ax = matplot::gca();
 
-    matplot::plot(ax,t,s)->line_width(3);;
+    //matplot::plot(ax,t,s)->line_width(3);;
     matplot::plot(ax,t,sdn)->line_width(3);;
     auto l=matplot::legend(ax, {"pressure", "derivative"});
     matplot::hold(matplot::off);

@@ -99,16 +99,24 @@ int interaction_root_2crit(const gsl_vector * x, void *params, gsl_vector * f){
   const double y4 =pressures_qgp.first;
   const double y5 =pressures_qgp.second;
   //position of spinodial boundaries
-  const double y6=press_dn_solv( degeneracy, nucleon_mass,spinodial_l_density, scalar_coeff, scalar_exp, vector_coeff,vector_exp);
-  const double y7=press_dn_solv( degeneracy, nucleon_mass,spinodial_r_density, scalar_coeff, scalar_exp, vector_coeff,vector_exp);
+  double y6=press_dn_solv( degeneracy, nucleon_mass,spinodial_l_density, scalar_coeff, scalar_exp, vector_coeff,vector_exp);
+  double y7=press_dn_solv( degeneracy, nucleon_mass,spinodial_r_density, scalar_coeff, scalar_exp, vector_coeff,vector_exp);
+  if(abs(y6)<1e-3){
+    y6=0;
+  }
+  if(abs(y7)<1e-3){
+    y7=0;
+  }
+  const double y6_cut=y6;
+  const double y7_cut=y7;
   gsl_vector_set (f, 0, y0);
   gsl_vector_set (f, 1, y1);
   gsl_vector_set (f, 2, y2);
   gsl_vector_set (f, 3, y3);
   gsl_vector_set (f, 4, y4);
   gsl_vector_set (f, 5, y5);
-  gsl_vector_set (f, 6, y6);
-  gsl_vector_set (f, 7, y7);
+  gsl_vector_set (f, 6, y6_cut);
+  gsl_vector_set (f, 7, y7_cut);
   return GSL_SUCCESS;
 }
 
@@ -306,7 +314,7 @@ vector<array<double,8> >  latin_gen(uniform_real_distribution<double> sgn_sample
   CSVRow row;
   vector<array<double,8> >  samples;
   unsigned int count=0;
-  while(count<num_test&&file >> row)
+  while(count<num_test+1000&&file >> row)
   {
     count++;
 
@@ -316,11 +324,11 @@ vector<array<double,8> >  latin_gen(uniform_real_distribution<double> sgn_sample
       sample[i]=sample[i]*(boundaries_model[i][1]-boundaries_model[i][0])+boundaries_model[i][0];
     }
     double buffer;
-    if (sample[3]<sample[2]){
+    /*if (sample[3]<sample[2]){
       buffer=sample[2];
       sample[2]=sample[3];
       sample[3]=buffer;
-    }
+    }*/
     for(int i=4;i<8;i++){
       if(!sgns||sgns[0]==0){
         sample[i]=sgn(sgn_sampler[i+4](re))*(sample[i]*(boundaries_model[i][1]-boundaries_model[i][0])+boundaries_model[i][0])/(pow(saturation_density,sample[i-4]-1));
@@ -432,6 +440,7 @@ void interaction_8D(double nucleon_mass, double binding_energy, double saturatio
   }else{
      num_threads=omp_get_max_threads();
   }
+  //num_threads=1;
   //generate the boundaries for random sampling
   uniform_real_distribution<double>  sampler [12];
   for(int i=0; i<4;i++){
@@ -515,7 +524,7 @@ void interaction_8D(double nucleon_mass, double binding_energy, double saturatio
 }
 
   //find solutions in a grid of input values
-void interaction_2crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], double boundaries_crit [4][3], unsigned int terms [2],string filename, bool print, unsigned int num_sol,unsigned int num_test, string latinfile){
+void interaction_2crit_grid(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy, double boundaries_model  [8][2], double boundaries_crit [6][3], unsigned int terms [2],string filename, bool print, unsigned int num_sol,unsigned int num_test, string latinfile){
   int count=0;
   assert(terms[0]+terms[1]==4);
   string basepath=filesystem::current_path().string() +"/"+filename;
@@ -525,11 +534,16 @@ void interaction_2crit_grid(double nucleon_mass, double binding_energy, double s
     for(double crit_lg_n=boundaries_crit[1][0]; crit_lg_n<=boundaries_crit[1][1];crit_lg_n+=boundaries_crit[1][2] ){
       for(double crit_qgp_T=boundaries_crit[2][0]; crit_qgp_T<=boundaries_crit[2][1];crit_qgp_T+=boundaries_crit[2][2] ){
         for(double crit_qgp_n=boundaries_crit[3][0]; crit_qgp_n<=boundaries_crit[3][1];crit_qgp_n+=boundaries_crit[3][2] ){
-          string dirpath=filesystem::current_path().string() +"/"+filename+"/"+to_string(count);
-          filesystem::path path=dirpath;
-          filesystem::create_directory(path);
-          interaction_8D_2step(nucleon_mass, binding_energy, saturation_density, degeneracy ,crit_lg_T,crit_lg_n,crit_qgp_T,crit_qgp_n, spinodial_l_density, spinodial_r_density,  boundaries_model,terms ,dirpath+"/solutions"+to_string(count), true, num_sol, num_test, 1e-9,latinfile);
-          count++;
+          for(double spinodial_l_density=boundaries_crit[4][0]; spinodial_l_density<=boundaries_crit[4][1];spinodial_l_density+=boundaries_crit[4][2] ){
+            for(double spinodial_r_density=boundaries_crit[5][0]; spinodial_r_density<=boundaries_crit[5][1];spinodial_r_density+=boundaries_crit[5][2] ){
+
+              string dirpath=filesystem::current_path().string() +"/"+filename+"/"+to_string(count);
+              filesystem::path path=dirpath;
+              filesystem::create_directory(path);
+              interaction_8D_2step(nucleon_mass, binding_energy, saturation_density, degeneracy ,crit_lg_T,crit_lg_n,crit_qgp_T,crit_qgp_n, spinodial_l_density, spinodial_r_density,  boundaries_model,terms ,dirpath+"/solutions"+to_string(count), true, num_sol, num_test, 1e-9,latinfile);
+              count++;
+            }
+          }
         }
       }
     }
@@ -541,8 +555,9 @@ void interaction_2crit_grid(double nucleon_mass, double binding_energy, double s
 void interaction_8D_2step(double nucleon_mass, double binding_energy, double saturation_density, double degeneracy ,double critical_temperature_lg, double critical_density_lg,double critical_temperature_qgp, double critical_density_qgp, double spinodial_l_density, double spinodial_r_density, double boundaries_model  [8][2], unsigned int terms [2],string filename, bool print, int num_sol, unsigned int num_test, double acceptance,string latinfile ){
   bool del=true;
   interaction_8D(nucleon_mass, binding_energy, saturation_density, degeneracy, critical_temperature_lg, critical_density_lg, critical_temperature_qgp, critical_density_qgp, spinodial_l_density, spinodial_r_density, boundaries_model, terms, filename, print, max(5*num_sol,5), num_test, 1, true, 0.05, nullptr, latinfile);
-  vector<array<array<double,2>,8> > init=extract_approx(filename, {0.05,0.1,3,4,0.1,0.5,30,1e5});
-  vector<array<int,4>>signs=extract_signs(filename);
+  pair<vector<array<array<double,2>,8> >,vector<array<int,4>>> approx=extract_approx(filename, {0.2,0.001});
+  vector<array<array<double,2>,8> >  init=approx.first;
+  vector<array<int,4>>signs=approx.second;
   int sgns[4];
   double  model [8][2];
   if(init.size()==0){
@@ -559,8 +574,9 @@ void interaction_8D_2step(double nucleon_mass, double binding_energy, double sat
     cout<<"NO SOLUTION FOUND"<<endl;
     return;
   }
-  init=extract_approx(filename);
-  signs=extract_signs(filename);
+  approx=extract_approx(filename);
+  init=approx.first;
+  signs=approx.second;
   for(int i=0; i<init.size(); i++){
     memcpy(model, init[i].data(), sizeof(init[i]));
     memcpy(sgns, signs[i].data(), sizeof(signs[i]));
@@ -570,40 +586,25 @@ void interaction_8D_2step(double nucleon_mass, double binding_energy, double sat
 }
 
 //extract approximations from acsv file
-vector<array<array<double,2>,8> > extract_approx(string filename, vector<double> range){
+pair<vector<array<array<double,2>,8> >,vector<array<int,4>>> extract_approx(string filename, vector<double> range){
   std::ifstream file(filename+".csv");
   CSVRow row;
   vector<array<array<double,2>,8> >  boundaries;
-  file >> row;
-  while(file >> row)
-  {
-
-    double coeff_1=abs(stod(row[9].data()) );
-    double coeff_2=abs(stod(row[10].data()));
-    double coeff_3=abs(stod(row[11].data()));
-    double coeff_4=abs(stod(row[12].data()));
-    array<array<double,2>,8> boundaries_model={{{stod(row[13].data())-range[0],stod(row[13].data())+range[0]},{stod(row[14].data())-range[1],stod(row[14].data())+range[1]},{stod(row[15].data())-range[2],stod(row[15].data())+range[2]},{stod(row[16].data())-range[3],stod(row[16].data())+range[3]},{coeff_1/(1+range[4]),coeff_1*(1+range[4])},{coeff_2/(1+range[5]),coeff_2*(1+range[5])},{coeff_3/(1+range[6]),coeff_3*(1+range[6])},{coeff_4/(1+range[7]),coeff_4*(1+range[7])}}};
-    boundaries.push_back(boundaries_model);
-  }
-  return boundaries;
-}
-
-//extract signs from the solutions
-vector<array<int,4>> extract_signs(string filename){
-  std::ifstream file(filename+".csv");
-  CSVRow row;
   vector<array<int,4> >  signs;
   file >> row;
   while(file >> row)
   {
-
-    int sgn_1=sgn(stod(row[9].data()) );
+    int sgn_1=sgn(stod(row[9].data()));
     int sgn_2=sgn(stod(row[10].data()));
-    int sgn_3=sgn(stod(row[11].data()));
+    int sgn_3=sgn(stod(row[11].data()) );
     int sgn_4=sgn(stod(row[12].data()));
-
     array<int,4> sgn_model={{sgn_1,sgn_2,sgn_3,sgn_4}};
+
+    array<array<double,2>,8> boundaries_model={{{stod(row[13].data())/(1+range[0]),stod(row[13].data())*(1+range[0])},{stod(row[14].data())/(1+range[0]),stod(row[14].data())*(1+range[0])},{stod(row[15].data())/(1+range[0]),stod(row[15].data())*(1+range[0])},{stod(row[16].data())/(1+range[0]),stod(row[16].data())*(1+range[0])},{abs(stod(row[9].data()))/(1+range[1]*pow(stod(row[13].data()),3)),abs(stod(row[9].data()))*(1+range[1]*pow(stod(row[13].data()),3))},{abs(stod(row[10].data()))/(1+range[1]*pow(stod(row[14].data()),3)),abs(stod(row[10].data()))*(1+range[4]*pow(stod(row[14].data()),3))},{abs(stod(row[11].data()))/(1+range[1]*pow(stod(row[15].data()),3)),abs(stod(row[11].data()))*(1+range[4]*pow(stod(row[15].data()),3))},{abs(stod(row[12].data()))/(1+range[1]*pow(stod(row[16].data()),3)),abs(stod(row[12].data()))*(1+range[4]*pow(stod(row[16].data()),3))}}};
+
     signs.push_back(sgn_model);
+
+    boundaries.push_back(boundaries_model);
   }
-  return signs;
+  return {boundaries,signs};
 }
